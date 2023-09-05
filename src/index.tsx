@@ -8,10 +8,13 @@ import {
   Container,
   IDataSchema,
   IUISchema,
-  Button
+  Button,
+  Control,
+  Label,
+  Icon
 } from '@ijstech/components';
 import { IConfig, IAnswer } from './interface';
-import { containerStyle, buttonStyle } from './index.css';
+import { containerStyle, buttonStyle, resultPnlStyle } from './index.css';
 import dataJson from './data.json'
 const Theme = Styles.Theme.ThemeVars;
 
@@ -199,8 +202,11 @@ declare global {
 export default class ScomQuiz extends Module {
   private pnlQuiz: Panel;
   private currentQuestionIndex: number = 0;
+  private selectedAnswerIdx: number = 0;
   private btnPrev: Button;
   private btnNext: Button;
+  private btnSubmit: Button;
+  private isQuizEnd: boolean = false;
 
   private _data: IConfig = { questions: [] };
   tag: any = {};
@@ -215,7 +221,7 @@ export default class ScomQuiz extends Module {
     super(parent, options);
   }
 
-  private getData() {
+  getData() {
     return this._data
   }
 
@@ -475,63 +481,228 @@ export default class ScomQuiz extends Module {
     //   [reorderAnswers[i], reorderAnswers[j]] = [reorderAnswers[j], reorderAnswers[i]];
     // }
 
+    this.pnlQuiz.clearInnerHTML();
+    const quizWrapper = (<i-vstack></i-vstack>);
+
     if (this.pnlQuiz) {
-      this.pnlQuiz.clearInnerHTML();
-      const quizWrapper = (<i-vstack></i-vstack>);
+      if (!this.isQuizEnd) {
+        // question
+        const question = (<i-hstack width="100%" class={containerStyle}>
+          <i-label caption={`${this.currentQuestionIndex + 1}`} margin={{ right: '1rem' }} font={{ bold: true, size: '20px' }}></i-label>
+          <i-label caption={`${currentQuestionData.question}`} font={{ size: '20px' }}></i-label>
+        </i-hstack>);
+        quizWrapper.append(question);
 
-      // question
-      const question = (<i-hstack width="100%" class={containerStyle}>
-        <i-label
-          caption={`${currentQuestionData.question}`}
-        ></i-label>
-      </i-hstack>);
-      quizWrapper.append(question);
+        // answers
+        for (let i = 0; i < currentQuestionData.answer.length; i++) {
+          const lblTxt = <i-label caption="Your Answer" font={{ color: 'var(--colors-primary-main)' }}></i-label> as Label;
+          const icon = <i-icon
+            id="answerIcon"
+            name="circle"
+            fill={Theme.colors.primary.main}
+            height={16} width={16}
+            class='answer-icon'
+            margin={{ right: '1rem' }}
+          ></i-icon> as Icon;
 
-      // answers
-      for (let i = 0; i < currentQuestionData.answer.length; i++) {
-        const answer = (<i-hstack width="100%" class={containerStyle} gap={"0.5rem"} onClick={() => this.onClickedAnswer()}>
-          <i-label caption={`${this.numberToLetter(i)})`}></i-label>
-          <i-label caption={currentQuestionData.answer[i].content}></i-label>
-        </i-hstack>)
-        answer.classList.add('answer');
-        quizWrapper.append(answer);
+          const answer = (<i-hstack width="100%" class={containerStyle} gap={"0.5rem"} verticalAlignment='center'
+            onClick={(control, event) => this.onClickedAnswer(control, i)}>
+            <i-hstack class='inner-container' zIndex="5"
+              width="100%"
+              position="relative"
+              padding={{ top: 0, left: 0, right: 0, bottom: 0 }}
+              margin={{ top: 0, left: 0, right: 0, bottom: 0 }}>
+              <i-panel class='answer-label' margin={{ left: '1rem' }} zIndex="10">
+                {lblTxt}
+              </i-panel>
+              {icon}
+              <i-label caption={`${this.numberToLetter(i)})`} margin={{ right: '0.5rem' }}></i-label>
+              <i-label caption={currentQuestionData.answer[i].content}></i-label>
+            </i-hstack>
+          </i-hstack>)
+          answer.classList.add('answer');
+
+          if (currentQuestionData.revealed) {
+            if (currentQuestionData.answer[i].selected && currentQuestionData.answer[i].correct) {
+              // selected correct answer
+              answer.classList.add('correct');
+              lblTxt.caption = "Your answer";
+              lblTxt.font = { color: 'var(--colors-success-main)' }
+              icon.name = 'check-circle';
+              icon.fill = "var(--colors-success-main)"
+            } else if (currentQuestionData.answer[i].selected && !currentQuestionData.answer[i].correct) {
+              // selected wrong answer
+              answer.classList.add('incorrect');
+              lblTxt.caption = "Your answer";
+              lblTxt.font = { color: 'var(--colors-error-main)' }
+              icon.name = 'times-circle';
+              icon.fill = "var(--colors-error-main)"
+            } else if (currentQuestionData.answer[i].correct) {
+              // display correct answer
+              answer.classList.add('correct');
+              lblTxt.caption = "Correct answer";
+              lblTxt.font = { color: 'var(--colors-success-main)' }
+              icon.name = 'check-circle';
+              icon.fill = "var(--colors-success-main)"
+            }
+          }
+          quizWrapper.append(answer);
+        }
+
+        // buttons
+        const gridBtnStack = (
+          <i-grid-layout width="100%" height="100px" horizontalAlignment="center" verticalAlignment="center"
+            templateColumns={['repeat(5, 1fr)']}
+            templateRows={['repeat(2, 1fr)']}
+            templateAreas={[
+              ["BtnReset", "BtnPrev", "lblNumberOfQuestion", "BtnNext", "BtnSubmit"],
+              ["BtnReset", "BtnPrev", "lblNumberOfAttempted", "BtnNext", "BtnSubmit"]
+            ]}
+            autoFillInHoles={false}
+            class={containerStyle}
+          >
+            <i-button grid={{ area: 'BtnReset' }} caption="Reset Quiz" rightIcon={{ name: 'redo' }} class={buttonStyle} onClick={() => this.onReset()}></i-button>
+            <i-button id="btnSubmit" grid={{ area: 'BtnSubmit' }} caption="Submit Answer" class={`${buttonStyle} disabled`} onClick={(control) => this.onSubmit(control)}></i-button>
+
+            <i-button id="btnPrev" grid={{ area: 'BtnPrev' }} width={35} height={35} icon={{ name: 'angle-left' }} border={{ radius: '50%' }} class={buttonStyle} onClick={() => this.onPrevQuestion()}></i-button>
+            <i-button id="btnNext" grid={{ area: 'BtnNext' }} width={35} height={35} icon={{ name: 'angle-right' }} border={{ radius: '50%' }} class={buttonStyle} onClick={() => this.onNextQuestion(this._data)}></i-button>
+            <i-button id="btnEndQuiz" grid={{ area: 'BtnNext' }} width={35} height={35} icon={{ name: 'check-circle' }} border={{ radius: '50%' }} class={buttonStyle} onClick={() => this.onEndQuiz()} visible={false}></i-button>
+
+            <i-label grid={{ area: 'lblNumberOfQuestion' }} caption={`Question ${this.currentQuestionIndex + 1} of ${this._data.questions.length}`}></i-label>
+            <i-label grid={{ area: 'lblNumberOfAttempted' }} caption={`${(currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt : 0} attempted`}></i-label>
+
+          </i-grid-layout>);
+
+        quizWrapper.append(gridBtnStack);
+
+        if (this.currentQuestionIndex == 0) this.btnPrev.classList.add('disabled');
+        if (this.currentQuestionIndex == this._data.questions.length - 1) this.btnNext.classList.add('disabled');
+
+        const isNotAllSubmitted = this._data.questions.find(q => !q.revealed);
+        if (/*!isNotAllSubmitted && */this.currentQuestionIndex == this._data.questions.length - 1) {
+          (this.querySelector('#btnEndQuiz') as Button).visible = true;
+          (this.querySelector('#btnNext') as Button).visible = false;
+        }
+
+        // this.pnlQuiz.style.textAlign = textAlign || 'left';
+        // this.pnlQuiz.height = height
+      } else {
+
+        const numberOfCorrect = this._data.questions.reduce((accumulator, q) => {
+          for (let i = 0; i < q.answer.length; i++) {
+            if (q.answer[i].correct !== q.answer[i].selected) return accumulator;
+          }
+          return accumulator + 1;
+        }, 0);
+
+        const numberOfUnanswered = this._data.questions.reduce((accumulator, q) => {
+          for (let i = 0; i < q.answer.length; i++) {
+            if (q.answer[i].selected) return accumulator;
+          }
+          return accumulator + 1;
+        }, 0);
+
+        const numberOfIncorrect = this._data.questions.length - numberOfCorrect - numberOfUnanswered;
+
+        const pnlResult = (<i-vstack horizontalAlignment='center' position='relative'
+          padding={{ left: '2rem', top: '2rem', right: '2rem' }}
+          border={{ color: 'var(--divider)', radius: '0.25rem', width: 1, style: 'solid' }}>
+          <i-panel border={{ color: 'var(--divider)', width: 0.5, style: 'solid' }} height={0} width={'80%'}
+            position="absolute" zIndex={5} top={'calc(20px + 2rem)'}></i-panel>
+          <i-hstack width={140} height={40}
+            padding={{ left: '0.5rem', top: '0.5rem', right: '0.5rem', bottom: '0.5rem' }}
+            margin={{ bottom: '1.5rem' }}
+            border={{ color: 'var(--divider)', radius: '0.25rem', width: 1, style: 'solid' }}
+            background={{ color: "var(--background-main)" }}
+            verticalAlignment='center'
+            horizontalAlignment='center' zIndex={10}>
+            <i-label caption="SUMMARY"></i-label>
+          </i-hstack>
+          <i-hstack horizontalAlignment='space-between' width={'50%'} minWidth={'300px'} class={`${resultPnlStyle} correct`}>
+            <i-label caption="Correct" font={{ color: 'var(--colors-success-main)', bold: true }}></i-label>
+            <i-label caption={`${numberOfCorrect}`} font={{ color: 'var(--colors-success-main)', bold: true }}></i-label>
+          </i-hstack>
+          <i-hstack horizontalAlignment='space-between' width={'50%'} minWidth={'300px'} class={`${resultPnlStyle} incorrect`}>
+            <i-label caption="Incorrect" font={{ color: 'var(--colors-error-main)', bold: true }}></i-label>
+            <i-label caption={`${numberOfIncorrect}`} font={{ color: 'var(--colors-error-main)', bold: true }}></i-label>
+          </i-hstack>
+          <i-hstack horizontalAlignment='space-between' width={'50%'} minWidth={'300px'} class={`${resultPnlStyle} unanswered`}>
+            <i-label caption="Unanswered" font={{ color: 'var(--divider)', bold: true }}></i-label>
+            <i-label caption={`${numberOfUnanswered}`} font={{ color: 'var(--divider)', bold: true }}></i-label>
+          </i-hstack>
+          <i-hstack width={'100%'} horizontalAlignment='center' gap={'1rem'} padding={{ left: '0.5rem', top: '1rem', right: '0.5rem', bottom: '1rem' }}>
+            <i-button caption="Reset Quiz" rightIcon={{ name: 'redo' }} class={buttonStyle} onClick={() => this.onResetQuiz()}></i-button>
+            <i-button caption="Check Answers" class={buttonStyle} onClick={() => this.onCheckAnswer()}></i-button>
+          </i-hstack>
+        </i-vstack>);
+        quizWrapper.append(pnlResult);
       }
       this.pnlQuiz.append(quizWrapper);
-
-      // buttons
-      const gridBtnStack = (
-        <i-grid-layout width="100%" height="100px" horizontalAlignment="center" verticalAlignment="center"
-          templateColumns={['repeat(5, 1fr)']}
-          templateRows={['repeat(2, 1fr)']}
-          templateAreas={[
-            ["BtnReset", "BtnPrev", "lblNumberOfQuestion", "BtnNext", "BtnSubmit"],
-            ["BtnReset", "BtnPrev", "lblNumberOfAttempted", "BtnNext", "BtnSubmit"]
-          ]}
-          autoFillInHoles={false}
-          class={containerStyle}
-        >
-          <i-button grid={{ area: 'BtnReset' }} caption="Reset Quiz" rightIcon={{ name: 'redo' }} class={buttonStyle}></i-button>
-          <i-button grid={{ area: 'BtnSubmit' }} caption="Submit Answer" class={buttonStyle}></i-button>
-
-          <i-button id="btnPrev" grid={{ area: 'BtnPrev' }} icon={{ name: 'angle-left' }} class={buttonStyle} onClick={() => this.onPrevQuestion()}></i-button>
-          <i-button id="btnNext" grid={{ area: 'BtnNext' }} icon={{ name: 'angle-right' }} class={buttonStyle} onClick={() => this.onNextQuestion(this._data)}></i-button>
-
-          <i-label grid={{ area: 'lblNumberOfQuestion' }} caption={`Question ${this.currentQuestionIndex + 1} of ${this._data.questions.length}`}></i-label>
-          <i-label grid={{ area: 'lblNumberOfAttempted' }} caption={`0 attempted`}></i-label>
-
-        </i-grid-layout>);
-      this.pnlQuiz.append(gridBtnStack);
-
-      if (this.currentQuestionIndex == 0) this.btnPrev.classList.add('disabled');
-      if (this.currentQuestionIndex == this._data.questions.length - 1) this.btnNext.classList.add('disabled');
-
-      // this.pnlQuiz.style.textAlign = textAlign || 'left';
-      // this.pnlQuiz.height = height
     }
   }
 
-  onClickedAnswer() {
+  onResetQuiz() {
+    this._data.questions.forEach(q => {
+      q.revealed = false;
+      q.numberOfAttempt = 0;
+      q.answer.forEach(a => {
+        a.selected = false;
+      })
+    })
 
+    this.currentQuestionIndex = 0;
+    this.isQuizEnd = false;
+    this.onUpdateBlock(this.tag);
+  }
+
+  onCheckAnswer() {
+    this.currentQuestionIndex = 0;
+    this.isQuizEnd = false;
+    this.onUpdateBlock(this.tag);
+  }
+
+  onEndQuiz() {
+    this.isQuizEnd = true;
+    this.onUpdateBlock(this.tag);
+  }
+
+  onReset() {
+    const currentQuestionData = this._data.questions[this.currentQuestionIndex];
+    currentQuestionData.numberOfAttempt = 0;
+    currentQuestionData.answer.forEach(ans => {
+      ans.selected = false;
+    })
+    currentQuestionData.revealed = false;
+    this.onUpdateBlock(this.tag);
+  }
+
+  onSubmit(control: Control) {
+    const currentQuestionData = this._data.questions[this.currentQuestionIndex];
+    const isSelectedAnswer = control.closest('i-scom-quiz').querySelector('.answer.selected');
+    if (!isSelectedAnswer) return;
+
+    currentQuestionData.numberOfAttempt = (currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt + 1 : 1;
+    currentQuestionData.answer.forEach(ans => {
+      ans.selected = false;
+    })
+    currentQuestionData.answer[this.selectedAnswerIdx].selected = true;
+    currentQuestionData.revealed = true;
+    this.onUpdateBlock(this.tag);
+  }
+
+  onClickedAnswer(control: Control, answerIdx: number) {
+    if (this._data.questions[this.currentQuestionIndex].revealed) return;
+
+    const answer = control.closest('i-scom-quiz').querySelectorAll('.answer');
+    this.btnSubmit.classList.remove('disabled')
+    answer.forEach(elm => {
+      elm.classList.remove('selected');
+    })
+    const targetAnswer = control.closest('.answer');
+    if (targetAnswer) {
+      targetAnswer.classList.add('selected');
+      this.selectedAnswerIdx = answerIdx;
+    };
   }
 
   onPrevQuestion() {

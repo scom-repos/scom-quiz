@@ -6,6 +6,7 @@ export interface IData {
   question: string;
   answer: IAnswer[];
   revealed?: boolean;
+  numberOfAttempt?: number;
 }
 
 export interface IAnswer {

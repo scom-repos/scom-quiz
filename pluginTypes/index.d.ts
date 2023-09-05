@@ -6,6 +6,8 @@ declare module "@scom/scom-quiz/interface.ts" {
     export interface IData {
         question: string;
         answer: IAnswer[];
+        revealed?: boolean;
+        numberOfAttempt?: number;
     }
     export interface IAnswer {
         content: string;
@@ -17,6 +19,7 @@ declare module "@scom/scom-quiz/interface.ts" {
 declare module "@scom/scom-quiz/index.css.ts" {
     export const containerStyle: string;
     export const buttonStyle: string;
+    export const resultPnlStyle: string;
 }
 /// <amd-module name="@scom/scom-quiz/data.json.ts" />
 declare module "@scom/scom-quiz/data.json.ts" {
@@ -27,7 +30,7 @@ declare module "@scom/scom-quiz/data.json.ts" {
 }
 /// <amd-module name="@scom/scom-quiz" />
 declare module "@scom/scom-quiz" {
-    import { Module, ControlElement, Container, IDataSchema, IUISchema } from '@ijstech/components';
+    import { Module, ControlElement, Container, IDataSchema, IUISchema, Control } from '@ijstech/components';
     import { IConfig } from "@scom/scom-quiz/interface.ts";
     interface ScomQuizElement extends ControlElement {
         lazyLoad?: boolean;
@@ -43,13 +46,16 @@ declare module "@scom/scom-quiz" {
     export default class ScomQuiz extends Module {
         private pnlQuiz;
         private currentQuestionIndex;
+        private selectedAnswerIdx;
         private btnPrev;
         private btnNext;
+        private btnSubmit;
+        private isQuizEnd;
         private _data;
         tag: any;
         static create(options?: ScomQuizElement, parent?: Container): Promise<ScomQuiz>;
         constructor(parent?: Container, options?: ScomQuizElement);
-        private getData;
+        getData(): IConfig;
         private setData;
         private getTag;
         private updateTag;
@@ -102,7 +108,12 @@ declare module "@scom/scom-quiz" {
         })[];
         private numberToLetter;
         private onUpdateBlock;
-        onClickedAnswer(): void;
+        onResetQuiz(): void;
+        onCheckAnswer(): void;
+        onEndQuiz(): void;
+        onReset(): void;
+        onSubmit(control: Control): void;
+        onClickedAnswer(control: Control, answerIdx: number): void;
         onPrevQuestion(): void;
         onNextQuestion(data: IConfig): void;
         init(): void;

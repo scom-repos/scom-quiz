@@ -22,12 +22,12 @@ define("@scom/scom-quiz/interface.ts", ["require", "exports"], function (require
 define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.buttonStyle = exports.containerStyle = void 0;
+    exports.resultPnlStyle = exports.buttonStyle = exports.containerStyle = void 0;
     const Theme = components_1.Styles.Theme.ThemeVars;
     exports.containerStyle = components_1.Styles.style({
         overflow: 'hidden',
         margin: '0 auto',
-        padding: '1rem 0.5rem',
+        padding: '1rem 1rem',
         border: '1px solid var(--divider)',
         background: "var(--background-main)",
         $nest: {
@@ -37,9 +37,82 @@ define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/componen
                 $nest: {
                     '&:hover': {
                         filter: 'brightness(0.95)'
+                    },
+                    '.answer-label': {
+                        position: 'absolute',
+                        top: '-14px',
+                        opacity: 0,
+                        border: `1.5px solid var(--colors-primary-main)`,
+                        borderRadius: '0.25rem',
+                        padding: '0.25rem 1.25rem !important',
+                        background: "var(--background-main)"
+                    },
+                    '&.selected': {
+                        $nest: {
+                            '.inner-container': {
+                                border: `1.5px solid var(--colors-primary-main)`,
+                                borderRadius: '0.25rem',
+                                padding: '1rem 1rem !important'
+                            },
+                            '.answer-icon': {
+                                opacity: 1
+                            },
+                            '.answer-label': {
+                                opacity: 1,
+                                border: `1.5px solid var(--colors-primary-main)`,
+                                // color: `var(--colors-primary-main) !important`
+                            }
+                        }
+                    },
+                    '&.correct': {
+                        $nest: {
+                            '.inner-container': {
+                                border: `1.5px solid var(--colors-success-main)`,
+                                borderRadius: '0.25rem',
+                                padding: '1rem 1rem !important'
+                            },
+                            '.answer-icon': {
+                                opacity: 1
+                            },
+                            '.answer-label': {
+                                opacity: 1,
+                                border: `1.5px solid var(--colors-success-main)`,
+                                // color: `var(--colors-success-main) !important`
+                            }
+                        }
+                    },
+                    '&.incorrect': {
+                        $nest: {
+                            '.inner-container': {
+                                border: `1.5px solid var(--colors-error-main)`,
+                                borderRadius: '0.25rem',
+                                padding: '1rem 1rem !important'
+                            },
+                            '.answer-icon': {
+                                opacity: 1
+                            },
+                            '.answer-label': {
+                                opacity: 1,
+                                border: `1.5px solid var(--colors-error-main)`,
+                                // color: `var(--colors-error-main) !important`
+                            }
+                        }
                     }
                 }
-            }
+            },
+            '.answer-icon': {
+                opacity: 0,
+                border: '1px solid #fff',
+                borderRadius: '50%',
+                transition: 'opacity 0.3s',
+            },
+            '&:hover': {
+                $nest: {
+                    '.answer-icon': {
+                        opacity: 1
+                    }
+                }
+            },
         }
     });
     exports.buttonStyle = components_1.Styles.style({
@@ -65,6 +138,23 @@ define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/componen
                         cursor: 'not-allowed !important'
                     }
                 }
+            }
+        }
+    });
+    exports.resultPnlStyle = components_1.Styles.style({
+        background: "var(--background-main)",
+        padding: '1rem 1.5rem',
+        borderRadius: '0.25rem',
+        border: '1px solid var(--divider)',
+        $nest: {
+            '&.unanswered': {
+                border: '1px solid var(--divider)',
+            },
+            '&.correct': {
+                border: '1px solid var(--colors-success-main)',
+            },
+            '&.incorrect': {
+                border: '1px solid var(--colors-error-main)',
             }
         }
     });
@@ -255,6 +345,8 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
         constructor(parent, options) {
             super(parent, options);
             this.currentQuestionIndex = 0;
+            this.selectedAnswerIdx = 0;
+            this.isQuizEnd = false;
             this._data = { questions: [] };
             this.tag = {};
         }
@@ -505,43 +597,173 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
             //   const j = Math.floor(Math.random() * (i + 1));
             //   [reorderAnswers[i], reorderAnswers[j]] = [reorderAnswers[j], reorderAnswers[i]];
             // }
+            this.pnlQuiz.clearInnerHTML();
+            const quizWrapper = (this.$render("i-vstack", null));
             if (this.pnlQuiz) {
-                this.pnlQuiz.clearInnerHTML();
-                const quizWrapper = (this.$render("i-vstack", null));
-                // question
-                const question = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle },
-                    this.$render("i-label", { caption: `${currentQuestionData.question}` })));
-                quizWrapper.append(question);
-                // answers
-                for (let i = 0; i < currentQuestionData.answer.length; i++) {
-                    const answer = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle, gap: "0.5rem", onClick: () => this.onClickedAnswer() },
-                        this.$render("i-label", { caption: `${this.numberToLetter(i)})` }),
-                        this.$render("i-label", { caption: currentQuestionData.answer[i].content })));
-                    answer.classList.add('answer');
-                    quizWrapper.append(answer);
+                if (!this.isQuizEnd) {
+                    // question
+                    const question = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle },
+                        this.$render("i-label", { caption: `${this.currentQuestionIndex + 1}`, margin: { right: '1rem' }, font: { bold: true, size: '20px' } }),
+                        this.$render("i-label", { caption: `${currentQuestionData.question}`, font: { size: '20px' } })));
+                    quizWrapper.append(question);
+                    // answers
+                    for (let i = 0; i < currentQuestionData.answer.length; i++) {
+                        const lblTxt = this.$render("i-label", { caption: "Your Answer", font: { color: 'var(--colors-primary-main)' } });
+                        const icon = this.$render("i-icon", { id: "answerIcon", name: "circle", fill: Theme.colors.primary.main, height: 16, width: 16, class: 'answer-icon', margin: { right: '1rem' } });
+                        const answer = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle, gap: "0.5rem", verticalAlignment: 'center', onClick: (control, event) => this.onClickedAnswer(control, i) },
+                            this.$render("i-hstack", { class: 'inner-container', zIndex: "5", width: "100%", position: "relative", padding: { top: 0, left: 0, right: 0, bottom: 0 }, margin: { top: 0, left: 0, right: 0, bottom: 0 } },
+                                this.$render("i-panel", { class: 'answer-label', margin: { left: '1rem' }, zIndex: "10" }, lblTxt),
+                                icon,
+                                this.$render("i-label", { caption: `${this.numberToLetter(i)})`, margin: { right: '0.5rem' } }),
+                                this.$render("i-label", { caption: currentQuestionData.answer[i].content }))));
+                        answer.classList.add('answer');
+                        if (currentQuestionData.revealed) {
+                            if (currentQuestionData.answer[i].selected && currentQuestionData.answer[i].correct) {
+                                // selected correct answer
+                                answer.classList.add('correct');
+                                lblTxt.caption = "Your answer";
+                                lblTxt.font = { color: 'var(--colors-success-main)' };
+                                icon.name = 'check-circle';
+                                icon.fill = "var(--colors-success-main)";
+                            }
+                            else if (currentQuestionData.answer[i].selected && !currentQuestionData.answer[i].correct) {
+                                // selected wrong answer
+                                answer.classList.add('incorrect');
+                                lblTxt.caption = "Your answer";
+                                lblTxt.font = { color: 'var(--colors-error-main)' };
+                                icon.name = 'times-circle';
+                                icon.fill = "var(--colors-error-main)";
+                            }
+                            else if (currentQuestionData.answer[i].correct) {
+                                // display correct answer
+                                answer.classList.add('correct');
+                                lblTxt.caption = "Correct answer";
+                                lblTxt.font = { color: 'var(--colors-success-main)' };
+                                icon.name = 'check-circle';
+                                icon.fill = "var(--colors-success-main)";
+                            }
+                        }
+                        quizWrapper.append(answer);
+                    }
+                    // buttons
+                    const gridBtnStack = (this.$render("i-grid-layout", { width: "100%", height: "100px", horizontalAlignment: "center", verticalAlignment: "center", templateColumns: ['repeat(5, 1fr)'], templateRows: ['repeat(2, 1fr)'], templateAreas: [
+                            ["BtnReset", "BtnPrev", "lblNumberOfQuestion", "BtnNext", "BtnSubmit"],
+                            ["BtnReset", "BtnPrev", "lblNumberOfAttempted", "BtnNext", "BtnSubmit"]
+                        ], autoFillInHoles: false, class: index_css_1.containerStyle },
+                        this.$render("i-button", { grid: { area: 'BtnReset' }, caption: "Reset Quiz", rightIcon: { name: 'redo' }, class: index_css_1.buttonStyle, onClick: () => this.onReset() }),
+                        this.$render("i-button", { id: "btnSubmit", grid: { area: 'BtnSubmit' }, caption: "Submit Answer", class: `${index_css_1.buttonStyle} disabled`, onClick: (control) => this.onSubmit(control) }),
+                        this.$render("i-button", { id: "btnPrev", grid: { area: 'BtnPrev' }, width: 35, height: 35, icon: { name: 'angle-left' }, border: { radius: '50%' }, class: index_css_1.buttonStyle, onClick: () => this.onPrevQuestion() }),
+                        this.$render("i-button", { id: "btnNext", grid: { area: 'BtnNext' }, width: 35, height: 35, icon: { name: 'angle-right' }, border: { radius: '50%' }, class: index_css_1.buttonStyle, onClick: () => this.onNextQuestion(this._data) }),
+                        this.$render("i-button", { id: "btnEndQuiz", grid: { area: 'BtnNext' }, width: 35, height: 35, icon: { name: 'check-circle' }, border: { radius: '50%' }, class: index_css_1.buttonStyle, onClick: () => this.onEndQuiz(), visible: false }),
+                        this.$render("i-label", { grid: { area: 'lblNumberOfQuestion' }, caption: `Question ${this.currentQuestionIndex + 1} of ${this._data.questions.length}` }),
+                        this.$render("i-label", { grid: { area: 'lblNumberOfAttempted' }, caption: `${(currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt : 0} attempted` })));
+                    quizWrapper.append(gridBtnStack);
+                    if (this.currentQuestionIndex == 0)
+                        this.btnPrev.classList.add('disabled');
+                    if (this.currentQuestionIndex == this._data.questions.length - 1)
+                        this.btnNext.classList.add('disabled');
+                    const isNotAllSubmitted = this._data.questions.find(q => !q.revealed);
+                    if ( /*!isNotAllSubmitted && */this.currentQuestionIndex == this._data.questions.length - 1) {
+                        this.querySelector('#btnEndQuiz').visible = true;
+                        this.querySelector('#btnNext').visible = false;
+                    }
+                    // this.pnlQuiz.style.textAlign = textAlign || 'left';
+                    // this.pnlQuiz.height = height
+                }
+                else {
+                    const numberOfCorrect = this._data.questions.reduce((accumulator, q) => {
+                        for (let i = 0; i < q.answer.length; i++) {
+                            if (q.answer[i].correct !== q.answer[i].selected)
+                                return accumulator;
+                        }
+                        return accumulator + 1;
+                    }, 0);
+                    const numberOfUnanswered = this._data.questions.reduce((accumulator, q) => {
+                        for (let i = 0; i < q.answer.length; i++) {
+                            if (q.answer[i].selected)
+                                return accumulator;
+                        }
+                        return accumulator + 1;
+                    }, 0);
+                    const numberOfIncorrect = this._data.questions.length - numberOfCorrect - numberOfUnanswered;
+                    const pnlResult = (this.$render("i-vstack", { horizontalAlignment: 'center', position: 'relative', padding: { left: '2rem', top: '2rem', right: '2rem' }, border: { color: 'var(--divider)', radius: '0.25rem', width: 1, style: 'solid' } },
+                        this.$render("i-panel", { border: { color: 'var(--divider)', width: 0.5, style: 'solid' }, height: 0, width: '80%', position: "absolute", zIndex: 5, top: 'calc(20px + 2rem)' }),
+                        this.$render("i-hstack", { width: 140, height: 40, padding: { left: '0.5rem', top: '0.5rem', right: '0.5rem', bottom: '0.5rem' }, margin: { bottom: '1.5rem' }, border: { color: 'var(--divider)', radius: '0.25rem', width: 1, style: 'solid' }, background: { color: "var(--background-main)" }, verticalAlignment: 'center', horizontalAlignment: 'center', zIndex: 10 },
+                            this.$render("i-label", { caption: "SUMMARY" })),
+                        this.$render("i-hstack", { horizontalAlignment: 'space-between', width: '50%', minWidth: '300px', class: `${index_css_1.resultPnlStyle} correct` },
+                            this.$render("i-label", { caption: "Correct", font: { color: 'var(--colors-success-main)', bold: true } }),
+                            this.$render("i-label", { caption: `${numberOfCorrect}`, font: { color: 'var(--colors-success-main)', bold: true } })),
+                        this.$render("i-hstack", { horizontalAlignment: 'space-between', width: '50%', minWidth: '300px', class: `${index_css_1.resultPnlStyle} incorrect` },
+                            this.$render("i-label", { caption: "Incorrect", font: { color: 'var(--colors-error-main)', bold: true } }),
+                            this.$render("i-label", { caption: `${numberOfIncorrect}`, font: { color: 'var(--colors-error-main)', bold: true } })),
+                        this.$render("i-hstack", { horizontalAlignment: 'space-between', width: '50%', minWidth: '300px', class: `${index_css_1.resultPnlStyle} unanswered` },
+                            this.$render("i-label", { caption: "Unanswered", font: { color: 'var(--divider)', bold: true } }),
+                            this.$render("i-label", { caption: `${numberOfUnanswered}`, font: { color: 'var(--divider)', bold: true } })),
+                        this.$render("i-hstack", { width: '100%', horizontalAlignment: 'center', gap: '1rem', padding: { left: '0.5rem', top: '1rem', right: '0.5rem', bottom: '1rem' } },
+                            this.$render("i-button", { caption: "Reset Quiz", rightIcon: { name: 'redo' }, class: index_css_1.buttonStyle, onClick: () => this.onResetQuiz() }),
+                            this.$render("i-button", { caption: "Check Answers", class: index_css_1.buttonStyle, onClick: () => this.onCheckAnswer() }))));
+                    quizWrapper.append(pnlResult);
                 }
                 this.pnlQuiz.append(quizWrapper);
-                // buttons
-                const gridBtnStack = (this.$render("i-grid-layout", { width: "100%", height: "100px", horizontalAlignment: "center", verticalAlignment: "center", templateColumns: ['repeat(5, 1fr)'], templateRows: ['repeat(2, 1fr)'], templateAreas: [
-                        ["BtnReset", "BtnPrev", "lblNumberOfQuestion", "BtnNext", "BtnSubmit"],
-                        ["BtnReset", "BtnPrev", "lblNumberOfAttempted", "BtnNext", "BtnSubmit"]
-                    ], autoFillInHoles: false, class: index_css_1.containerStyle },
-                    this.$render("i-button", { grid: { area: 'BtnReset' }, caption: "Reset Quiz", rightIcon: { name: 'redo' }, class: index_css_1.buttonStyle }),
-                    this.$render("i-button", { grid: { area: 'BtnSubmit' }, caption: "Submit Answer", class: index_css_1.buttonStyle }),
-                    this.$render("i-button", { id: "btnPrev", grid: { area: 'BtnPrev' }, icon: { name: 'angle-left' }, class: index_css_1.buttonStyle, onClick: () => this.onPrevQuestion() }),
-                    this.$render("i-button", { id: "btnNext", grid: { area: 'BtnNext' }, icon: { name: 'angle-right' }, class: index_css_1.buttonStyle, onClick: () => this.onNextQuestion(this._data) }),
-                    this.$render("i-label", { grid: { area: 'lblNumberOfQuestion' }, caption: `Question ${this.currentQuestionIndex + 1} of ${this._data.questions.length}` }),
-                    this.$render("i-label", { grid: { area: 'lblNumberOfAttempted' }, caption: `0 attempted` })));
-                this.pnlQuiz.append(gridBtnStack);
-                if (this.currentQuestionIndex == 0)
-                    this.btnPrev.classList.add('disabled');
-                if (this.currentQuestionIndex == this._data.questions.length - 1)
-                    this.btnNext.classList.add('disabled');
-                // this.pnlQuiz.style.textAlign = textAlign || 'left';
-                // this.pnlQuiz.height = height
             }
         }
-        onClickedAnswer() {
+        onResetQuiz() {
+            this._data.questions.forEach(q => {
+                q.revealed = false;
+                q.numberOfAttempt = 0;
+                q.answer.forEach(a => {
+                    a.selected = false;
+                });
+            });
+            this.currentQuestionIndex = 0;
+            this.isQuizEnd = false;
+            this.onUpdateBlock(this.tag);
+        }
+        onCheckAnswer() {
+            this.currentQuestionIndex = 0;
+            this.isQuizEnd = false;
+            this.onUpdateBlock(this.tag);
+        }
+        onEndQuiz() {
+            this.isQuizEnd = true;
+            this.onUpdateBlock(this.tag);
+        }
+        onReset() {
+            const currentQuestionData = this._data.questions[this.currentQuestionIndex];
+            currentQuestionData.numberOfAttempt = 0;
+            currentQuestionData.answer.forEach(ans => {
+                ans.selected = false;
+            });
+            currentQuestionData.revealed = false;
+            this.onUpdateBlock(this.tag);
+        }
+        onSubmit(control) {
+            const currentQuestionData = this._data.questions[this.currentQuestionIndex];
+            const isSelectedAnswer = control.closest('i-scom-quiz').querySelector('.answer.selected');
+            if (!isSelectedAnswer)
+                return;
+            currentQuestionData.numberOfAttempt = (currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt + 1 : 1;
+            currentQuestionData.answer.forEach(ans => {
+                ans.selected = false;
+            });
+            currentQuestionData.answer[this.selectedAnswerIdx].selected = true;
+            currentQuestionData.revealed = true;
+            this.onUpdateBlock(this.tag);
+        }
+        onClickedAnswer(control, answerIdx) {
+            if (this._data.questions[this.currentQuestionIndex].revealed)
+                return;
+            const answer = control.closest('i-scom-quiz').querySelectorAll('.answer');
+            this.btnSubmit.classList.remove('disabled');
+            answer.forEach(elm => {
+                elm.classList.remove('selected');
+            });
+            const targetAnswer = control.closest('.answer');
+            if (targetAnswer) {
+                targetAnswer.classList.add('selected');
+                this.selectedAnswerIdx = answerIdx;
+            }
+            ;
         }
         onPrevQuestion() {
             if (this.currentQuestionIndex == 0)
