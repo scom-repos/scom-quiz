@@ -39,22 +39,27 @@ const propertiesUISchema: IUISchema = {
                       elements: [
                         {
                           type: "Control",
-                          scope: "#/properties/linkButtons",
+                          scope: "#/properties/questions",
                           options: {
-                            elementLabelProp: "caption",
+                            // elementLabelProp: "caption",
                             detail: {
-                              type: "HorizontalLayout",
+                              type: "VerticalLayout",
                               elements: [
+                                {
+                                  type: "Control",
+                                  scope: "#/properties/question"
+                                },
                                 {
                                   type: "HorizontalLayout",
                                   elements: [
                                     {
                                       type: "Control",
-                                      scope: "#/properties/caption"
+                                      scope: "#/properties/content"
                                     },
                                     {
                                       type: "Control",
-                                      scope: "#/properties/url"
+                                      scope: "#/properties/correct",
+                                      
                                     }
                                   ]
                                 }
@@ -259,16 +264,27 @@ export default class ScomQuiz extends Module {
     const schema: IDataSchema = {
       type: "object",
       properties: {
-        linkButtons: {
+        questions: {
           type: "array",
           items: {
             type: "object",
             properties: {
-              caption: {
+              question: {
                 type: "string"
               },
-              url: {
-                type: "string"
+              answers: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    content: {
+                      type: "string"
+                    },
+                    correct: {
+                      type: "boolean"
+                    }
+                  }
+                }
               }
             }
           }
@@ -365,18 +381,17 @@ export default class ScomQuiz extends Module {
             execute: async () => {
               oldData = JSON.parse(JSON.stringify(this._data))
               const {
-                linkButtons,
+                questions,
                 ...themeSettings
               } = userInputData;
               const generalSettings = {
-                questions: linkButtons
+                questions: questions
               };
               if (builder?.setData) builder.setData(generalSettings);
               this.setData(generalSettings);
               oldTag = JSON.parse(JSON.stringify(this.tag));
               if (builder) builder.setTag(themeSettings);
               else this.setTag(themeSettings);
-
             },
             undo: async () => {
               this._data = JSON.parse(JSON.stringify(oldData))
@@ -420,24 +435,6 @@ export default class ScomQuiz extends Module {
           const schema = this.getDataSchema(true);
           return this._getActions(schema);
         },
-        getLinkParams: () => {
-          const data = this._data || {};
-          return {
-            data: window.btoa(JSON.stringify(data))
-          }
-        },
-        setLinkParams: async (params: any) => {
-          if (params.data) {
-            const utf8String = decodeURIComponent(params.data);
-            const decodedString = window.atob(utf8String);
-            const newData = JSON.parse(decodedString);
-            let resultingData = {
-              ...self._data,
-              ...newData
-            };
-            await this.setData(resultingData);
-          }
-        },
         getData: this.getData.bind(this),
         setData: this.setData.bind(this),
         getTag: this.getTag.bind(this),
@@ -467,6 +464,7 @@ export default class ScomQuiz extends Module {
     //   textAlign = 'left',
     //   height = 'auto'
     // } = config || {};
+    if (!this._data.questions) return;
 
     const currentQuestionData = this._data.questions[this.currentQuestionIndex];
 
@@ -494,7 +492,7 @@ export default class ScomQuiz extends Module {
         quizWrapper.append(question);
 
         // answers
-        for (let i = 0; i < currentQuestionData.answer.length; i++) {
+        for (let i = 0; i < currentQuestionData.answers.length; i++) {
           const lblTxt = <i-label caption="Your Answer" font={{ color: 'var(--colors-primary-main)' }}></i-label> as Label;
           const icon = <i-icon
             id="answerIcon"
@@ -517,27 +515,27 @@ export default class ScomQuiz extends Module {
               </i-panel>
               {icon}
               <i-label caption={`${this.numberToLetter(i)})`} margin={{ right: '0.5rem' }}></i-label>
-              <i-label caption={currentQuestionData.answer[i].content}></i-label>
+              <i-label caption={currentQuestionData.answers[i].content}></i-label>
             </i-hstack>
           </i-hstack>)
           answer.classList.add('answer');
 
           if (currentQuestionData.revealed) {
-            if (currentQuestionData.answer[i].selected && currentQuestionData.answer[i].correct) {
+            if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct) {
               // selected correct answer
               answer.classList.add('correct');
               lblTxt.caption = "Your answer";
               lblTxt.font = { color: 'var(--colors-success-main)' }
               icon.name = 'check-circle';
               icon.fill = "var(--colors-success-main)"
-            } else if (currentQuestionData.answer[i].selected && !currentQuestionData.answer[i].correct) {
+            } else if (currentQuestionData.answers[i].selected && !currentQuestionData.answers[i].correct) {
               // selected wrong answer
               answer.classList.add('incorrect');
               lblTxt.caption = "Your answer";
               lblTxt.font = { color: 'var(--colors-error-main)' }
               icon.name = 'times-circle';
               icon.fill = "var(--colors-error-main)"
-            } else if (currentQuestionData.answer[i].correct) {
+            } else if (currentQuestionData.answers[i].correct) {
               // display correct answer
               answer.classList.add('correct');
               lblTxt.caption = "Correct answer";
@@ -589,15 +587,15 @@ export default class ScomQuiz extends Module {
       } else {
 
         const numberOfCorrect = this._data.questions.reduce((accumulator, q) => {
-          for (let i = 0; i < q.answer.length; i++) {
-            if (q.answer[i].correct !== q.answer[i].selected) return accumulator;
+          for (let i = 0; i < q.answers.length; i++) {
+            if (q.answers[i].correct !== q.answers[i].selected) return accumulator;
           }
           return accumulator + 1;
         }, 0);
 
         const numberOfUnanswered = this._data.questions.reduce((accumulator, q) => {
-          for (let i = 0; i < q.answer.length; i++) {
-            if (q.answer[i].selected) return accumulator;
+          for (let i = 0; i < q.answers.length; i++) {
+            if (q.answers[i].selected) return accumulator;
           }
           return accumulator + 1;
         }, 0);
@@ -645,7 +643,7 @@ export default class ScomQuiz extends Module {
     this._data.questions.forEach(q => {
       q.revealed = false;
       q.numberOfAttempt = 0;
-      q.answer.forEach(a => {
+      q.answers.forEach(a => {
         a.selected = false;
       })
     })
@@ -669,7 +667,7 @@ export default class ScomQuiz extends Module {
   onReset() {
     const currentQuestionData = this._data.questions[this.currentQuestionIndex];
     currentQuestionData.numberOfAttempt = 0;
-    currentQuestionData.answer.forEach(ans => {
+    currentQuestionData.answers.forEach(ans => {
       ans.selected = false;
     })
     currentQuestionData.revealed = false;
@@ -682,10 +680,10 @@ export default class ScomQuiz extends Module {
     if (!isSelectedAnswer) return;
 
     currentQuestionData.numberOfAttempt = (currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt + 1 : 1;
-    currentQuestionData.answer.forEach(ans => {
+    currentQuestionData.answers.forEach(ans => {
       ans.selected = false;
     })
-    currentQuestionData.answer[this.selectedAnswerIdx].selected = true;
+    currentQuestionData.answers[this.selectedAnswerIdx].selected = true;
     currentQuestionData.revealed = true;
     this.onUpdateBlock(this.tag);
   }

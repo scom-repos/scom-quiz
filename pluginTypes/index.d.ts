@@ -5,7 +5,7 @@ declare module "@scom/scom-quiz/interface.ts" {
     }
     export interface IData {
         question: string;
-        answer: IAnswer[];
+        answers: IAnswer[];
         revealed?: boolean;
         numberOfAttempt?: number;
     }
@@ -24,7 +24,15 @@ declare module "@scom/scom-quiz/index.css.ts" {
 /// <amd-module name="@scom/scom-quiz/data.json.ts" />
 declare module "@scom/scom-quiz/data.json.ts" {
     const _default: {
-        defaultBuilderData: {};
+        defaultBuilderData: {
+            questions: {
+                question: string;
+                answers: {
+                    content: string;
+                    correct: boolean;
+                }[];
+            }[];
+        };
     };
     export default _default;
 }
@@ -63,7 +71,7 @@ declare module "@scom/scom-quiz" {
         private setTheme;
         private getDataSchema;
         private _getActions;
-        getConfigurators(): ({
+        getConfigurators(): {
             name: string;
             target: string;
             getActions: () => {
@@ -77,35 +85,11 @@ declare module "@scom/scom-quiz" {
                 userInputDataSchema: IDataSchema;
                 userInputUISchema: IUISchema;
             }[];
-            getData: any;
-            setData: (data: IConfig) => Promise<void>;
-            getTag: any;
-            setTag: any;
-            getLinkParams?: undefined;
-            setLinkParams?: undefined;
-        } | {
-            name: string;
-            target: string;
-            getActions: () => {
-                name: string;
-                icon: string;
-                command: (builder: any, userInputData: any) => {
-                    execute: () => Promise<void>;
-                    undo: () => Promise<void>;
-                    redo: () => void;
-                };
-                userInputDataSchema: IDataSchema;
-                userInputUISchema: IUISchema;
-            }[];
-            getLinkParams: () => {
-                data: string;
-            };
-            setLinkParams: (params: any) => Promise<void>;
             getData: any;
             setData: any;
             getTag: any;
             setTag: any;
-        })[];
+        }[];
         private numberToLetter;
         private onUpdateBlock;
         onResetQuiz(): void;

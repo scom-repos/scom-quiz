@@ -164,7 +164,69 @@ define("@scom/scom-quiz/data.json.ts", ["require", "exports"], function (require
     Object.defineProperty(exports, "__esModule", { value: true });
     ///<amd-module name='@scom/scom-quiz/data.json.ts'/> 
     exports.default = {
-        "defaultBuilderData": {}
+        "defaultBuilderData": {
+            questions: [
+                {
+                    question: 'What is the time, and space complexity of the following code:',
+                    answers: [
+                        {
+                            content: 'O(N) time, O(1) space',
+                            correct: true
+                        },
+                        {
+                            content: 'O(N * M) time, O(N) space',
+                            correct: false
+                        },
+                        {
+                            content: 'O(N * M) time, O(N + M) space',
+                            correct: false
+                        }
+                    ]
+                },
+                {
+                    question: 'What is the time complexity of the following code:',
+                    answers: [
+                        {
+                            content: 'O(N*N)',
+                            correct: false
+                        },
+                        {
+                            content: 'O(N)',
+                            correct: false
+                        },
+                        {
+                            content: 'O(N*log(N))',
+                            correct: false
+                        },
+                        {
+                            content: 'O(N * Sqrt(N))',
+                            correct: true
+                        }
+                    ]
+                },
+                {
+                    question: 'What is the time complexity of the following code:',
+                    answers: [
+                        {
+                            content: 'O(n^2)',
+                            correct: false
+                        },
+                        {
+                            content: 'O(n^2Logn)',
+                            correct: false
+                        },
+                        {
+                            content: 'O(n)',
+                            correct: false
+                        },
+                        {
+                            content: 'O(nLogn)',
+                            correct: true
+                        }
+                    ]
+                }
+            ]
+        }
     };
 });
 define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/scom-quiz/index.css.ts", "@scom/scom-quiz/data.json.ts"], function (require, exports, components_2, index_css_1, data_json_1) {
@@ -192,22 +254,26 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                                                 elements: [
                                                     {
                                                         type: "Control",
-                                                        scope: "#/properties/linkButtons",
+                                                        scope: "#/properties/questions",
                                                         options: {
-                                                            elementLabelProp: "caption",
+                                                            // elementLabelProp: "caption",
                                                             detail: {
-                                                                type: "HorizontalLayout",
+                                                                type: "VerticalLayout",
                                                                 elements: [
+                                                                    {
+                                                                        type: "Control",
+                                                                        scope: "#/properties/question"
+                                                                    },
                                                                     {
                                                                         type: "HorizontalLayout",
                                                                         elements: [
                                                                             {
                                                                                 type: "Control",
-                                                                                scope: "#/properties/caption"
+                                                                                scope: "#/properties/content"
                                                                             },
                                                                             {
                                                                                 type: "Control",
-                                                                                scope: "#/properties/url"
+                                                                                scope: "#/properties/correct",
                                                                             }
                                                                         ]
                                                                     }
@@ -387,16 +453,27 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
             const schema = {
                 type: "object",
                 properties: {
-                    linkButtons: {
+                    questions: {
                         type: "array",
                         items: {
                             type: "object",
                             properties: {
-                                caption: {
+                                question: {
                                     type: "string"
                                 },
-                                url: {
-                                    type: "string"
+                                answers: {
+                                    type: "array",
+                                    items: {
+                                        type: "object",
+                                        properties: {
+                                            content: {
+                                                type: "string"
+                                            },
+                                            correct: {
+                                                type: "boolean"
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -490,9 +567,9 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                         return {
                             execute: async () => {
                                 oldData = JSON.parse(JSON.stringify(this._data));
-                                const { linkButtons } = userInputData, themeSettings = __rest(userInputData, ["linkButtons"]);
+                                const { questions } = userInputData, themeSettings = __rest(userInputData, ["questions"]);
                                 const generalSettings = {
-                                    questions: linkButtons
+                                    questions: questions
                                 };
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData(generalSettings);
@@ -547,21 +624,6 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                         const schema = this.getDataSchema(true);
                         return this._getActions(schema);
                     },
-                    getLinkParams: () => {
-                        const data = this._data || {};
-                        return {
-                            data: window.btoa(JSON.stringify(data))
-                        };
-                    },
-                    setLinkParams: async (params) => {
-                        if (params.data) {
-                            const utf8String = decodeURIComponent(params.data);
-                            const decodedString = window.atob(utf8String);
-                            const newData = JSON.parse(decodedString);
-                            let resultingData = Object.assign(Object.assign({}, self._data), newData);
-                            await this.setData(resultingData);
-                        }
-                    },
                     getData: this.getData.bind(this),
                     setData: this.setData.bind(this),
                     getTag: this.getTag.bind(this),
@@ -587,6 +649,8 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
             //   textAlign = 'left',
             //   height = 'auto'
             // } = config || {};
+            if (!this._data.questions)
+                return;
             const currentQuestionData = this._data.questions[this.currentQuestionIndex];
             // let reorderAnswers: IAnswer[] = [];
             // for (const item of currentQuestionData.answer) {
@@ -607,7 +671,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                         this.$render("i-label", { caption: `${currentQuestionData.question}`, font: { size: '20px' } })));
                     quizWrapper.append(question);
                     // answers
-                    for (let i = 0; i < currentQuestionData.answer.length; i++) {
+                    for (let i = 0; i < currentQuestionData.answers.length; i++) {
                         const lblTxt = this.$render("i-label", { caption: "Your Answer", font: { color: 'var(--colors-primary-main)' } });
                         const icon = this.$render("i-icon", { id: "answerIcon", name: "circle", fill: Theme.colors.primary.main, height: 16, width: 16, class: 'answer-icon', margin: { right: '1rem' } });
                         const answer = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle, gap: "0.5rem", verticalAlignment: 'center', onClick: (control, event) => this.onClickedAnswer(control, i) },
@@ -615,10 +679,10 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                                 this.$render("i-panel", { class: 'answer-label', margin: { left: '1rem' }, zIndex: "10" }, lblTxt),
                                 icon,
                                 this.$render("i-label", { caption: `${this.numberToLetter(i)})`, margin: { right: '0.5rem' } }),
-                                this.$render("i-label", { caption: currentQuestionData.answer[i].content }))));
+                                this.$render("i-label", { caption: currentQuestionData.answers[i].content }))));
                         answer.classList.add('answer');
                         if (currentQuestionData.revealed) {
-                            if (currentQuestionData.answer[i].selected && currentQuestionData.answer[i].correct) {
+                            if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct) {
                                 // selected correct answer
                                 answer.classList.add('correct');
                                 lblTxt.caption = "Your answer";
@@ -626,7 +690,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                                 icon.name = 'check-circle';
                                 icon.fill = "var(--colors-success-main)";
                             }
-                            else if (currentQuestionData.answer[i].selected && !currentQuestionData.answer[i].correct) {
+                            else if (currentQuestionData.answers[i].selected && !currentQuestionData.answers[i].correct) {
                                 // selected wrong answer
                                 answer.classList.add('incorrect');
                                 lblTxt.caption = "Your answer";
@@ -634,7 +698,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                                 icon.name = 'times-circle';
                                 icon.fill = "var(--colors-error-main)";
                             }
-                            else if (currentQuestionData.answer[i].correct) {
+                            else if (currentQuestionData.answers[i].correct) {
                                 // display correct answer
                                 answer.classList.add('correct');
                                 lblTxt.caption = "Correct answer";
@@ -672,15 +736,15 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                 }
                 else {
                     const numberOfCorrect = this._data.questions.reduce((accumulator, q) => {
-                        for (let i = 0; i < q.answer.length; i++) {
-                            if (q.answer[i].correct !== q.answer[i].selected)
+                        for (let i = 0; i < q.answers.length; i++) {
+                            if (q.answers[i].correct !== q.answers[i].selected)
                                 return accumulator;
                         }
                         return accumulator + 1;
                     }, 0);
                     const numberOfUnanswered = this._data.questions.reduce((accumulator, q) => {
-                        for (let i = 0; i < q.answer.length; i++) {
-                            if (q.answer[i].selected)
+                        for (let i = 0; i < q.answers.length; i++) {
+                            if (q.answers[i].selected)
                                 return accumulator;
                         }
                         return accumulator + 1;
@@ -711,7 +775,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
             this._data.questions.forEach(q => {
                 q.revealed = false;
                 q.numberOfAttempt = 0;
-                q.answer.forEach(a => {
+                q.answers.forEach(a => {
                     a.selected = false;
                 });
             });
@@ -731,7 +795,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
         onReset() {
             const currentQuestionData = this._data.questions[this.currentQuestionIndex];
             currentQuestionData.numberOfAttempt = 0;
-            currentQuestionData.answer.forEach(ans => {
+            currentQuestionData.answers.forEach(ans => {
                 ans.selected = false;
             });
             currentQuestionData.revealed = false;
@@ -743,10 +807,10 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
             if (!isSelectedAnswer)
                 return;
             currentQuestionData.numberOfAttempt = (currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt + 1 : 1;
-            currentQuestionData.answer.forEach(ans => {
+            currentQuestionData.answers.forEach(ans => {
                 ans.selected = false;
             });
-            currentQuestionData.answer[this.selectedAnswerIdx].selected = true;
+            currentQuestionData.answers[this.selectedAnswerIdx].selected = true;
             currentQuestionData.revealed = true;
             this.onUpdateBlock(this.tag);
         }

@@ -4,7 +4,7 @@ export interface IConfig {
 
 export interface IData {
   question: string;
-  answer: IAnswer[];
+  answers: IAnswer[];
   revealed?: boolean;
   numberOfAttempt?: number;
 }
