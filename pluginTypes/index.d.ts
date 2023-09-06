@@ -63,7 +63,7 @@ declare module "@scom/scom-quiz" {
         tag: any;
         static create(options?: ScomQuizElement, parent?: Container): Promise<ScomQuiz>;
         constructor(parent?: Container, options?: ScomQuizElement);
-        getData(): IConfig;
+        private getData;
         private setData;
         private getTag;
         private updateTag;

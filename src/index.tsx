@@ -29,7 +29,7 @@ const propertiesUISchema: IUISchema = {
           elements: [
             {
               type: "Category",
-              label: "General settings",
+              label: "General",
               elements: [
                 {
                   type: "VerticalLayout",
@@ -41,25 +41,30 @@ const propertiesUISchema: IUISchema = {
                           type: "Control",
                           scope: "#/properties/questions",
                           options: {
-                            // elementLabelProp: "caption",
                             detail: {
                               type: "VerticalLayout",
                               elements: [
                                 {
-                                  type: "Control",
-                                  scope: "#/properties/question"
-                                },
-                                {
-                                  type: "HorizontalLayout",
+                                  type: "Group",
+                                  label: "",
                                   elements: [
                                     {
                                       type: "Control",
-                                      scope: "#/properties/content"
+                                      scope: "#/properties/question"
                                     },
                                     {
-                                      type: "Control",
-                                      scope: "#/properties/correct",
-                                      
+                                      type: "HorizontalLayout",
+                                      elements: [
+                                        {
+                                          type: "Control",
+                                          scope: "#/properties/content"
+                                        },
+                                        {
+                                          type: "Control",
+                                          scope: "#/properties/correct",
+
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -75,29 +80,11 @@ const propertiesUISchema: IUISchema = {
             },
             {
               type: "Category",
-              label: "Theme settings",
+              label: "Theme",
               elements: [
                 {
                   type: "VerticalLayout",
                   elements: [
-                    {
-                      type: "HorizontalLayout",
-                      elements: [
-                        {
-                          type: "Control",
-                          scope: "#/properties/textAlign"
-                        }
-                      ]
-                    },
-                    {
-                      type: "HorizontalLayout",
-                      elements: [
-                        {
-                          type: "Control",
-                          scope: "#/properties/height"
-                        }
-                      ]
-                    },
                     {
                       type: "HorizontalLayout",
                       elements: [
@@ -107,32 +94,15 @@ const propertiesUISchema: IUISchema = {
                           elements: [
                             {
                               type: "Control",
-                              scope: "#/properties/dark/properties/linkButtonStyle",
-                              options: {
-                                elementLabelProp: "caption",
-                                detail: {
-                                  type: "HorizontalLayout",
-                                  elements: [
-                                    {
-                                      type: "HorizontalLayout",
-                                      elements: [
-                                        {
-                                          type: "Control",
-                                          scope: "#/properties/captionColor"
-                                        },
-                                        {
-                                          type: "Control",
-                                          scope: "#/properties/color"
-                                        },
-                                        {
-                                          type: "Control",
-                                          scope: "#/properties/buttonType"
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              }
+                              scope: "#/properties/dark/properties/questionFontColor"
+                            },
+                            {
+                              type: "Control",
+                              scope: "#/properties/dark/properties/answerFontColor"
+                            },
+                            {
+                              type: "Control",
+                              scope: "#/properties/dark/properties/systemFontColor"
                             }
                           ]
                         },
@@ -147,32 +117,15 @@ const propertiesUISchema: IUISchema = {
                           elements: [
                             {
                               type: "Control",
-                              scope: "#/properties/light/properties/linkButtonStyle",
-                              options: {
-                                elementLabelProp: "caption",
-                                detail: {
-                                  type: "HorizontalLayout",
-                                  elements: [
-                                    {
-                                      type: "HorizontalLayout",
-                                      elements: [
-                                        {
-                                          type: "Control",
-                                          scope: "#/properties/captionColor"
-                                        },
-                                        {
-                                          type: "Control",
-                                          scope: "#/properties/color"
-                                        },
-                                        {
-                                          type: "Control",
-                                          scope: "#/properties/buttonType"
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              }
+                              scope: "#/properties/light/properties/questionFontColor"
+                            },
+                            {
+                              type: "Control",
+                              scope: "#/properties/light/properties/answerFontColor"
+                            },
+                            {
+                              type: "Control",
+                              scope: "#/properties/light/properties/systemFontColor"
                             }
                           ]
                         }
@@ -226,7 +179,7 @@ export default class ScomQuiz extends Module {
     super(parent, options);
   }
 
-  getData() {
+  private getData() {
     return this._data
   }
 
@@ -252,7 +205,6 @@ export default class ScomQuiz extends Module {
     if (newValue.light) this.updateTag('light', newValue.light);
     if (newValue.dark) this.updateTag('dark', newValue.dark);
     if (newValue.hasOwnProperty('height')) this.tag.height = newValue.height;
-    if (newValue.hasOwnProperty('textAlign')) this.tag.textAlign = newValue.textAlign;
     this.onUpdateBlock(value);
   }
 
@@ -292,76 +244,42 @@ export default class ScomQuiz extends Module {
         dark: {
           type: 'object',
           properties: {
-            linkButtonStyle: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  captionColor: {
-                    title: "Text color",
-                    type: 'string',
-                    format: 'color'
-                  },
-                  color: {
-                    title: "Background color",
-                    type: 'string',
-                    format: 'color'
-                  },
-                  buttonType: {
-                    type: 'string',
-                    enum: [
-                      'filled',
-                      'outlined',
-                      'text'
-                    ]
-                  }
-                }
-              }
+            questionFontColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
+            },
+            answerFontColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
+            },
+            systemFontColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
             }
           }
         },
         light: {
           type: 'object',
           properties: {
-            linkButtonStyle: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  captionColor: {
-                    title: "Text color",
-                    type: 'string',
-                    format: 'color'
-                  },
-                  color: {
-                    title: "Background color",
-                    type: 'string',
-                    format: 'color'
-                  },
-                  buttonType: {
-                    type: 'string',
-                    enum: [
-                      'filled',
-                      'outlined',
-                      'text'
-                    ]
-                  }
-                }
-              }
+            questionFontColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
+            },
+            answerFontColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
+            },
+            systemFontColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
             }
           }
-        },
-        textAlign: {
-          type: 'string',
-          enum: [
-            'left',
-            'center',
-            'right'
-          ],
-          readOnly
-        },
-        height: {
-          type: 'number'
         }
       }
     };
@@ -456,14 +374,15 @@ export default class ScomQuiz extends Module {
   }
 
   private onUpdateBlock(config: any) {
-    // const themeVar = document.body.style.getPropertyValue('--theme') || 'dark';
-    // const {
-    //   linkButtonStyle = []
-    // } = config[themeVar] || {};
-    // const {
-    //   textAlign = 'left',
-    //   height = 'auto'
-    // } = config || {};
+    const themeVar = document.body.style.getPropertyValue('--theme') || 'dark';
+    const {
+      questionFontColor,
+      answerFontColor,
+      systemFontColor
+    } = config[themeVar] || {};
+    const {
+      height = 'auto'
+    } = config || {};
     if (!this._data.questions) return;
 
     const currentQuestionData = this._data.questions[this.currentQuestionIndex];
@@ -486,8 +405,8 @@ export default class ScomQuiz extends Module {
       if (!this.isQuizEnd) {
         // question
         const question = (<i-hstack width="100%" class={containerStyle}>
-          <i-label caption={`${this.currentQuestionIndex + 1}`} margin={{ right: '1rem' }} font={{ bold: true, size: '20px' }}></i-label>
-          <i-label caption={`${currentQuestionData.question}`} font={{ size: '20px' }}></i-label>
+          <i-label caption={`${this.currentQuestionIndex + 1}`} margin={{ right: '1rem' }} font={{ bold: true, size: '20px', color: questionFontColor }}></i-label>
+          <i-label caption={`${currentQuestionData.question}`} font={{ size: '20px', color: questionFontColor }}></i-label>
         </i-hstack>);
         quizWrapper.append(question);
 
@@ -514,8 +433,8 @@ export default class ScomQuiz extends Module {
                 {lblTxt}
               </i-panel>
               {icon}
-              <i-label caption={`${this.numberToLetter(i)})`} margin={{ right: '0.5rem' }}></i-label>
-              <i-label caption={currentQuestionData.answers[i].content}></i-label>
+              <i-label caption={`${this.numberToLetter(i)})`} margin={{ right: '0.5rem' }} font={{ color: answerFontColor }}></i-label>
+              <i-label caption={currentQuestionData.answers[i].content} font={{ color: answerFontColor }}></i-label>
             </i-hstack>
           </i-hstack>)
           answer.classList.add('answer');
@@ -559,15 +478,15 @@ export default class ScomQuiz extends Module {
             autoFillInHoles={false}
             class={containerStyle}
           >
-            <i-button grid={{ area: 'BtnReset' }} caption="Reset Quiz" rightIcon={{ name: 'redo' }} class={buttonStyle} onClick={() => this.onReset()}></i-button>
-            <i-button id="btnSubmit" grid={{ area: 'BtnSubmit' }} caption="Submit Answer" class={`${buttonStyle} disabled`} onClick={(control) => this.onSubmit(control)}></i-button>
+            <i-button grid={{ area: 'BtnReset' }} caption="Reset Quiz" rightIcon={{ name: 'redo' }} class={buttonStyle} font={{ color: systemFontColor }} onClick={() => this.onReset()}></i-button>
+            <i-button id="btnSubmit" grid={{ area: 'BtnSubmit' }} caption="Submit Answer" class={`${buttonStyle} disabled`} font={{ color: systemFontColor }} onClick={(control) => this.onSubmit(control)}></i-button>
 
             <i-button id="btnPrev" grid={{ area: 'BtnPrev' }} width={35} height={35} icon={{ name: 'angle-left' }} border={{ radius: '50%' }} class={buttonStyle} onClick={() => this.onPrevQuestion()}></i-button>
             <i-button id="btnNext" grid={{ area: 'BtnNext' }} width={35} height={35} icon={{ name: 'angle-right' }} border={{ radius: '50%' }} class={buttonStyle} onClick={() => this.onNextQuestion(this._data)}></i-button>
             <i-button id="btnEndQuiz" grid={{ area: 'BtnNext' }} width={35} height={35} icon={{ name: 'check-circle' }} border={{ radius: '50%' }} class={buttonStyle} onClick={() => this.onEndQuiz()} visible={false}></i-button>
 
-            <i-label grid={{ area: 'lblNumberOfQuestion' }} caption={`Question ${this.currentQuestionIndex + 1} of ${this._data.questions.length}`}></i-label>
-            <i-label grid={{ area: 'lblNumberOfAttempted' }} caption={`${(currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt : 0} attempted`}></i-label>
+            <i-label grid={{ area: 'lblNumberOfQuestion' }} caption={`Question ${this.currentQuestionIndex + 1} of ${this._data.questions.length}`} font={{ color: systemFontColor }} ></i-label>
+            <i-label grid={{ area: 'lblNumberOfAttempted' }} caption={`${(currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt : 0} attempted`} font={{ color: systemFontColor }} ></i-label>
 
           </i-grid-layout>);
 

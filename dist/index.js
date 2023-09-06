@@ -244,7 +244,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                         elements: [
                             {
                                 type: "Category",
-                                label: "General settings",
+                                label: "General",
                                 elements: [
                                     {
                                         type: "VerticalLayout",
@@ -256,24 +256,29 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                                                         type: "Control",
                                                         scope: "#/properties/questions",
                                                         options: {
-                                                            // elementLabelProp: "caption",
                                                             detail: {
                                                                 type: "VerticalLayout",
                                                                 elements: [
                                                                     {
-                                                                        type: "Control",
-                                                                        scope: "#/properties/question"
-                                                                    },
-                                                                    {
-                                                                        type: "HorizontalLayout",
+                                                                        type: "Group",
+                                                                        label: "",
                                                                         elements: [
                                                                             {
                                                                                 type: "Control",
-                                                                                scope: "#/properties/content"
+                                                                                scope: "#/properties/question"
                                                                             },
                                                                             {
-                                                                                type: "Control",
-                                                                                scope: "#/properties/correct",
+                                                                                type: "HorizontalLayout",
+                                                                                elements: [
+                                                                                    {
+                                                                                        type: "Control",
+                                                                                        scope: "#/properties/content"
+                                                                                    },
+                                                                                    {
+                                                                                        type: "Control",
+                                                                                        scope: "#/properties/correct",
+                                                                                    }
+                                                                                ]
                                                                             }
                                                                         ]
                                                                     }
@@ -289,29 +294,11 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                             },
                             {
                                 type: "Category",
-                                label: "Theme settings",
+                                label: "Theme",
                                 elements: [
                                     {
                                         type: "VerticalLayout",
                                         elements: [
-                                            {
-                                                type: "HorizontalLayout",
-                                                elements: [
-                                                    {
-                                                        type: "Control",
-                                                        scope: "#/properties/textAlign"
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                type: "HorizontalLayout",
-                                                elements: [
-                                                    {
-                                                        type: "Control",
-                                                        scope: "#/properties/height"
-                                                    }
-                                                ]
-                                            },
                                             {
                                                 type: "HorizontalLayout",
                                                 elements: [
@@ -321,32 +308,15 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                                                         elements: [
                                                             {
                                                                 type: "Control",
-                                                                scope: "#/properties/dark/properties/linkButtonStyle",
-                                                                options: {
-                                                                    elementLabelProp: "caption",
-                                                                    detail: {
-                                                                        type: "HorizontalLayout",
-                                                                        elements: [
-                                                                            {
-                                                                                type: "HorizontalLayout",
-                                                                                elements: [
-                                                                                    {
-                                                                                        type: "Control",
-                                                                                        scope: "#/properties/captionColor"
-                                                                                    },
-                                                                                    {
-                                                                                        type: "Control",
-                                                                                        scope: "#/properties/color"
-                                                                                    },
-                                                                                    {
-                                                                                        type: "Control",
-                                                                                        scope: "#/properties/buttonType"
-                                                                                    }
-                                                                                ]
-                                                                            }
-                                                                        ]
-                                                                    }
-                                                                }
+                                                                scope: "#/properties/dark/properties/questionFontColor"
+                                                            },
+                                                            {
+                                                                type: "Control",
+                                                                scope: "#/properties/dark/properties/answerFontColor"
+                                                            },
+                                                            {
+                                                                type: "Control",
+                                                                scope: "#/properties/dark/properties/systemFontColor"
                                                             }
                                                         ]
                                                     },
@@ -361,32 +331,15 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                                                         elements: [
                                                             {
                                                                 type: "Control",
-                                                                scope: "#/properties/light/properties/linkButtonStyle",
-                                                                options: {
-                                                                    elementLabelProp: "caption",
-                                                                    detail: {
-                                                                        type: "HorizontalLayout",
-                                                                        elements: [
-                                                                            {
-                                                                                type: "HorizontalLayout",
-                                                                                elements: [
-                                                                                    {
-                                                                                        type: "Control",
-                                                                                        scope: "#/properties/captionColor"
-                                                                                    },
-                                                                                    {
-                                                                                        type: "Control",
-                                                                                        scope: "#/properties/color"
-                                                                                    },
-                                                                                    {
-                                                                                        type: "Control",
-                                                                                        scope: "#/properties/buttonType"
-                                                                                    }
-                                                                                ]
-                                                                            }
-                                                                        ]
-                                                                    }
-                                                                }
+                                                                scope: "#/properties/light/properties/questionFontColor"
+                                                            },
+                                                            {
+                                                                type: "Control",
+                                                                scope: "#/properties/light/properties/answerFontColor"
+                                                            },
+                                                            {
+                                                                type: "Control",
+                                                                scope: "#/properties/light/properties/systemFontColor"
                                                             }
                                                         ]
                                                     }
@@ -442,8 +395,6 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                 this.updateTag('dark', newValue.dark);
             if (newValue.hasOwnProperty('height'))
                 this.tag.height = newValue.height;
-            if (newValue.hasOwnProperty('textAlign'))
-                this.tag.textAlign = newValue.textAlign;
             this.onUpdateBlock(value);
         }
         setTheme(value) {
@@ -481,76 +432,42 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                     dark: {
                         type: 'object',
                         properties: {
-                            linkButtonStyle: {
-                                type: 'array',
-                                items: {
-                                    type: 'object',
-                                    properties: {
-                                        captionColor: {
-                                            title: "Text color",
-                                            type: 'string',
-                                            format: 'color'
-                                        },
-                                        color: {
-                                            title: "Background color",
-                                            type: 'string',
-                                            format: 'color'
-                                        },
-                                        buttonType: {
-                                            type: 'string',
-                                            enum: [
-                                                'filled',
-                                                'outlined',
-                                                'text'
-                                            ]
-                                        }
-                                    }
-                                }
+                            questionFontColor: {
+                                type: 'string',
+                                format: 'color',
+                                readOnly
+                            },
+                            answerFontColor: {
+                                type: 'string',
+                                format: 'color',
+                                readOnly
+                            },
+                            systemFontColor: {
+                                type: 'string',
+                                format: 'color',
+                                readOnly
                             }
                         }
                     },
                     light: {
                         type: 'object',
                         properties: {
-                            linkButtonStyle: {
-                                type: 'array',
-                                items: {
-                                    type: 'object',
-                                    properties: {
-                                        captionColor: {
-                                            title: "Text color",
-                                            type: 'string',
-                                            format: 'color'
-                                        },
-                                        color: {
-                                            title: "Background color",
-                                            type: 'string',
-                                            format: 'color'
-                                        },
-                                        buttonType: {
-                                            type: 'string',
-                                            enum: [
-                                                'filled',
-                                                'outlined',
-                                                'text'
-                                            ]
-                                        }
-                                    }
-                                }
+                            questionFontColor: {
+                                type: 'string',
+                                format: 'color',
+                                readOnly
+                            },
+                            answerFontColor: {
+                                type: 'string',
+                                format: 'color',
+                                readOnly
+                            },
+                            systemFontColor: {
+                                type: 'string',
+                                format: 'color',
+                                readOnly
                             }
                         }
-                    },
-                    textAlign: {
-                        type: 'string',
-                        enum: [
-                            'left',
-                            'center',
-                            'right'
-                        ],
-                        readOnly
-                    },
-                    height: {
-                        type: 'number'
                     }
                 }
             };
@@ -641,14 +558,9 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
             return letter;
         }
         onUpdateBlock(config) {
-            // const themeVar = document.body.style.getPropertyValue('--theme') || 'dark';
-            // const {
-            //   linkButtonStyle = []
-            // } = config[themeVar] || {};
-            // const {
-            //   textAlign = 'left',
-            //   height = 'auto'
-            // } = config || {};
+            const themeVar = document.body.style.getPropertyValue('--theme') || 'dark';
+            const { questionFontColor, answerFontColor, systemFontColor } = config[themeVar] || {};
+            const { height = 'auto' } = config || {};
             if (!this._data.questions)
                 return;
             const currentQuestionData = this._data.questions[this.currentQuestionIndex];
@@ -667,8 +579,8 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                 if (!this.isQuizEnd) {
                     // question
                     const question = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle },
-                        this.$render("i-label", { caption: `${this.currentQuestionIndex + 1}`, margin: { right: '1rem' }, font: { bold: true, size: '20px' } }),
-                        this.$render("i-label", { caption: `${currentQuestionData.question}`, font: { size: '20px' } })));
+                        this.$render("i-label", { caption: `${this.currentQuestionIndex + 1}`, margin: { right: '1rem' }, font: { bold: true, size: '20px', color: questionFontColor } }),
+                        this.$render("i-label", { caption: `${currentQuestionData.question}`, font: { size: '20px', color: questionFontColor } })));
                     quizWrapper.append(question);
                     // answers
                     for (let i = 0; i < currentQuestionData.answers.length; i++) {
@@ -678,8 +590,8 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                             this.$render("i-hstack", { class: 'inner-container', zIndex: "5", width: "100%", position: "relative", padding: { top: 0, left: 0, right: 0, bottom: 0 }, margin: { top: 0, left: 0, right: 0, bottom: 0 } },
                                 this.$render("i-panel", { class: 'answer-label', margin: { left: '1rem' }, zIndex: "10" }, lblTxt),
                                 icon,
-                                this.$render("i-label", { caption: `${this.numberToLetter(i)})`, margin: { right: '0.5rem' } }),
-                                this.$render("i-label", { caption: currentQuestionData.answers[i].content }))));
+                                this.$render("i-label", { caption: `${this.numberToLetter(i)})`, margin: { right: '0.5rem' }, font: { color: answerFontColor } }),
+                                this.$render("i-label", { caption: currentQuestionData.answers[i].content, font: { color: answerFontColor } }))));
                         answer.classList.add('answer');
                         if (currentQuestionData.revealed) {
                             if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct) {
@@ -714,13 +626,13 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                             ["BtnReset", "BtnPrev", "lblNumberOfQuestion", "BtnNext", "BtnSubmit"],
                             ["BtnReset", "BtnPrev", "lblNumberOfAttempted", "BtnNext", "BtnSubmit"]
                         ], autoFillInHoles: false, class: index_css_1.containerStyle },
-                        this.$render("i-button", { grid: { area: 'BtnReset' }, caption: "Reset Quiz", rightIcon: { name: 'redo' }, class: index_css_1.buttonStyle, onClick: () => this.onReset() }),
-                        this.$render("i-button", { id: "btnSubmit", grid: { area: 'BtnSubmit' }, caption: "Submit Answer", class: `${index_css_1.buttonStyle} disabled`, onClick: (control) => this.onSubmit(control) }),
+                        this.$render("i-button", { grid: { area: 'BtnReset' }, caption: "Reset Quiz", rightIcon: { name: 'redo' }, class: index_css_1.buttonStyle, font: { color: systemFontColor }, onClick: () => this.onReset() }),
+                        this.$render("i-button", { id: "btnSubmit", grid: { area: 'BtnSubmit' }, caption: "Submit Answer", class: `${index_css_1.buttonStyle} disabled`, font: { color: systemFontColor }, onClick: (control) => this.onSubmit(control) }),
                         this.$render("i-button", { id: "btnPrev", grid: { area: 'BtnPrev' }, width: 35, height: 35, icon: { name: 'angle-left' }, border: { radius: '50%' }, class: index_css_1.buttonStyle, onClick: () => this.onPrevQuestion() }),
                         this.$render("i-button", { id: "btnNext", grid: { area: 'BtnNext' }, width: 35, height: 35, icon: { name: 'angle-right' }, border: { radius: '50%' }, class: index_css_1.buttonStyle, onClick: () => this.onNextQuestion(this._data) }),
                         this.$render("i-button", { id: "btnEndQuiz", grid: { area: 'BtnNext' }, width: 35, height: 35, icon: { name: 'check-circle' }, border: { radius: '50%' }, class: index_css_1.buttonStyle, onClick: () => this.onEndQuiz(), visible: false }),
-                        this.$render("i-label", { grid: { area: 'lblNumberOfQuestion' }, caption: `Question ${this.currentQuestionIndex + 1} of ${this._data.questions.length}` }),
-                        this.$render("i-label", { grid: { area: 'lblNumberOfAttempted' }, caption: `${(currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt : 0} attempted` })));
+                        this.$render("i-label", { grid: { area: 'lblNumberOfQuestion' }, caption: `Question ${this.currentQuestionIndex + 1} of ${this._data.questions.length}`, font: { color: systemFontColor } }),
+                        this.$render("i-label", { grid: { area: 'lblNumberOfAttempted' }, caption: `${(currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt : 0} attempted`, font: { color: systemFontColor } })));
                     quizWrapper.append(gridBtnStack);
                     if (this.currentQuestionIndex == 0)
                         this.btnPrev.classList.add('disabled');
