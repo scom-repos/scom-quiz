@@ -93,16 +93,43 @@ const propertiesUISchema: IUISchema = {
                           label: "Dark mode",
                           elements: [
                             {
-                              type: "Control",
-                              scope: "#/properties/dark/properties/questionFontColor"
-                            },
-                            {
-                              type: "Control",
-                              scope: "#/properties/dark/properties/answerFontColor"
-                            },
-                            {
-                              type: "Control",
-                              scope: "#/properties/dark/properties/systemFontColor"
+                              type: "VerticalLayout",
+                              elements: [
+                                {
+                                  type: "HorizontalLayout",
+                                  elements: [
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/dark/properties/questionFontColor"
+                                    },
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/dark/properties/answerFontColor"
+                                    },
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/dark/properties/systemFontColor"
+                                    }
+                                  ]
+                                },
+                                {
+                                  type: "HorizontalLayout",
+                                  elements: [
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/dark/properties/backgroundColor"
+                                    },
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/dark/properties/buttonColor"
+                                    },
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/dark/properties/borderColor"
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           ]
                         },
@@ -116,16 +143,43 @@ const propertiesUISchema: IUISchema = {
                           label: "Light mode",
                           elements: [
                             {
-                              type: "Control",
-                              scope: "#/properties/light/properties/questionFontColor"
-                            },
-                            {
-                              type: "Control",
-                              scope: "#/properties/light/properties/answerFontColor"
-                            },
-                            {
-                              type: "Control",
-                              scope: "#/properties/light/properties/systemFontColor"
+                              type: "VerticalLayout",
+                              elements: [
+                                {
+                                  type: "HorizontalLayout",
+                                  elements: [
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/light/properties/questionFontColor"
+                                    },
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/light/properties/answerFontColor"
+                                    },
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/light/properties/systemFontColor"
+                                    }
+                                  ]
+                                },
+                                {
+                                  type: "HorizontalLayout",
+                                  elements: [
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/light/properties/backgroundColor"
+                                    },
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/light/properties/buttonColor"
+                                    },
+                                    {
+                                      type: "Control",
+                                      scope: "#/properties/light/properties/borderColor"
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           ]
                         }
@@ -258,6 +312,21 @@ export default class ScomQuiz extends Module {
               type: 'string',
               format: 'color',
               readOnly
+            },
+            backgroundColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
+            },
+            buttonColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
+            },
+            borderColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
             }
           }
         },
@@ -275,6 +344,21 @@ export default class ScomQuiz extends Module {
               readOnly
             },
             systemFontColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
+            },
+            backgroundColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
+            },
+            buttonColor: {
+              type: 'string',
+              format: 'color',
+              readOnly
+            },
+            borderColor: {
               type: 'string',
               format: 'color',
               readOnly
@@ -378,7 +462,10 @@ export default class ScomQuiz extends Module {
     const {
       questionFontColor,
       answerFontColor,
-      systemFontColor
+      systemFontColor,
+      backgroundColor,
+      buttonColor,
+      borderColor
     } = config[themeVar] || {};
     const {
       height = 'auto'
@@ -405,11 +492,12 @@ export default class ScomQuiz extends Module {
       if (!this.isQuizEnd) {
         const isMultipleChoice = this.checkIfMultipleAnswer();
         // question
-        const hintNumber = <i-label caption={'*Select more than 1 answer'} font={{ size: '12px', color: questionFontColor || Theme.colors.secondary }} visible={false}></i-label>;
-        const question = (<i-hstack width="100%" class={containerStyle}>
-          <i-label caption={`${this.currentQuestionIndex + 1}`} margin={{ right: '1rem' }} font={{ bold: true, size: '20px', color: questionFontColor }}></i-label>
+        const hintNumber = <i-label caption={'*Select more than 1 answer'} font={{ size: '12px', color: questionFontColor || '#808080' }} visible={false}></i-label>;
+        const question = (<i-hstack width="100%" class={containerStyle} background={{ color: backgroundColor || '#fff' }}
+          border={{ width: 1, style: 'solid', color: borderColor || "#FFFFFF" }}>
+          <i-label caption={`${this.currentQuestionIndex + 1}`} margin={{ right: '1rem' }} font={{ bold: true, size: '20px', color: questionFontColor || '#000000' }}></i-label>
           <i-vstack verticalAlignment='start' gap={'0.5rem'}>
-            <i-label caption={`${currentQuestionData.question}`} font={{ size: '20px', color: questionFontColor }}></i-label>
+            <i-label caption={`${currentQuestionData.question}`} font={{ size: '20px', color: questionFontColor || '#000000' }}></i-label>
             {hintNumber}
           </i-vstack>
         </i-hstack>);
@@ -418,8 +506,8 @@ export default class ScomQuiz extends Module {
 
         // answers
         for (let i = 0; i < currentQuestionData.answers.length; i++) {
-          const lblTxtInner = <i-label caption="Your Answer" font={{ color: 'var(--colors-primary-main)' }}></i-label> as Label;
-          const lblTxtOuter = <i-label caption="Correct Answer" font={{ color: 'var(--colors-success-main)' }}></i-label> as Label;
+          const lblTxtInner = <i-label caption="Your Answer" font={{ color: '#3f51b5' }}></i-label> as Label;
+          const lblTxtOuter = <i-label caption="Correct Answer" font={{ color: '#4caf50' }}></i-label> as Label;
           const icon = <i-icon
             id="answerIcon"
             name="circle"
@@ -430,9 +518,10 @@ export default class ScomQuiz extends Module {
           ></i-icon> as Icon;
 
           const answer = (<i-hstack width="100%" class={containerStyle} gap={"0.5rem"}
-            verticalAlignment='center' position='relative'
+            border={{ width: 1, style: 'solid', color: borderColor || "#FFFFFF" }}
+            verticalAlignment='center' position='relative' background={{ color: backgroundColor || '#fff' }}
             onClick={(control, event) => this.onClickedAnswer(control, i)}>
-            <i-panel class='answer-label-outer' margin={{ left: '1rem' }} zIndex="10">
+            <i-panel class='answer-label-outer' margin={{ left: '1rem' }} zIndex="10" background={{ color: backgroundColor || '#fff' }}>
               {lblTxtOuter}
             </i-panel>
             <i-hstack class='inner-container' zIndex="5"
@@ -440,12 +529,12 @@ export default class ScomQuiz extends Module {
               position="relative"
               padding={{ top: 0, left: 0, right: 0, bottom: 0 }}
               margin={{ top: 0, left: 0, right: 0, bottom: 0 }}>
-              <i-panel class='answer-label-inner' margin={{ left: '1rem' }} zIndex="10">
+              <i-panel class='answer-label-inner' margin={{ left: '1rem' }} zIndex="10" background={{ color: backgroundColor || '#fff' }}>
                 {lblTxtInner}
               </i-panel>
               {icon}
-              <i-label caption={`${this.numberToLetter(i)})`} margin={{ right: '0.5rem' }} font={{ color: answerFontColor }}></i-label>
-              <i-label caption={currentQuestionData.answers[i].content} font={{ color: answerFontColor }}></i-label>
+              <i-label caption={`${this.numberToLetter(i)})`} margin={{ right: '0.5rem' }} font={{ color: answerFontColor || '#000' }}></i-label>
+              <i-label caption={currentQuestionData.answers[i].content} font={{ color: answerFontColor || '#000' }}></i-label>
             </i-hstack>
           </i-hstack>)
           answer.classList.add('answer');
@@ -459,27 +548,27 @@ export default class ScomQuiz extends Module {
             if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct && isCorrect) {
               // selected all correct answers
               answer.classList.add('selected-correct');
-              lblTxtInner.font = { color: 'var(--colors-success-main)' }
+              lblTxtInner.font = { color: '#4caf50' }
               icon.name = 'check-circle';
-              icon.fill = "var(--colors-success-main)"
+              icon.fill = "#4caf50"
             } else if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct && !isCorrect) {
               // selected partial correct answers
               answer.classList.add('selected-incorrect');
               answer.classList.add('show-correct');
-              lblTxtInner.font = { color: 'var(--colors-error-main)' }
+              lblTxtInner.font = { color: '#f44336' }
               icon.name = 'times-circle';
-              icon.fill = "var(--colors-error-main)"
+              icon.fill = "#f44336"
             } else if (currentQuestionData.answers[i].selected && !currentQuestionData.answers[i].correct) {
               // selected wrong answer
               answer.classList.add('selected-incorrect');
-              lblTxtInner.font = { color: 'var(--colors-error-main)' }
+              lblTxtInner.font = { color: '#f44336' }
               icon.name = 'times-circle';
-              icon.fill = "var(--colors-error-main)"
+              icon.fill = "#f44336"
             } else if (currentQuestionData.answers[i].correct) {
               // display correct answer
               answer.classList.add('show-correct');
               icon.name = 'check-circle';
-              icon.fill = "var(--colors-success-main)"
+              icon.fill = "#4caf50"
             }
           }
           quizWrapper.append(answer);
@@ -496,23 +585,35 @@ export default class ScomQuiz extends Module {
             ]}
             autoFillInHoles={false}
             class={containerStyle}
+            border={{ width: 1, style: 'solid', color: borderColor || "#FFFFFF" }}
+            background={{ color: backgroundColor || '#fff' }}
           >
-            <i-button grid={{ area: 'BtnReset' }} caption="Reset Quiz" rightIcon={{ name: 'redo' }} class={buttonStyle} font={{ color: systemFontColor }} onClick={() => this.onReset()}></i-button>
-            <i-button id="btnSubmit" grid={{ area: 'BtnSubmit' }} caption="Submit Answer" class={`${buttonStyle} disabled`} font={{ color: systemFontColor }} onClick={(control) => this.onSubmit(control)}></i-button>
+            <i-button grid={{ area: 'BtnReset' }} caption="Reset Quiz" rightIcon={{ name: 'redo', fill: systemFontColor || '#000' }}
+              background={{ color: buttonColor || '#fff' }} class={buttonStyle} font={{ color: systemFontColor || '#000' }} onClick={() => this.onReset()}></i-button>
+            <i-button id="btnSubmit" grid={{ area: 'BtnSubmit' }} caption="Submit Answer" background={{ color: buttonColor || '#fff' }}
+              class={`${buttonStyle} disabled-btn`} font={{ color: systemFontColor || '#000' }} onClick={(control) => this.onSubmit(control)}></i-button>
 
-            <i-button id="btnPrev" grid={{ area: 'BtnPrev' }} width={35} height={35} icon={{ name: 'angle-left' }} border={{ radius: '50%' }} class={buttonStyle} onClick={() => this.onPrevQuestion()}></i-button>
-            <i-button id="btnNext" grid={{ area: 'BtnNext' }} width={35} height={35} icon={{ name: 'angle-right' }} border={{ radius: '50%' }} class={buttonStyle} onClick={() => this.onNextQuestion(this._data)}></i-button>
-            <i-button id="btnEndQuiz" grid={{ area: 'BtnNext' }} width={35} height={35} icon={{ name: 'check-circle' }} border={{ radius: '50%' }} class={buttonStyle} onClick={() => this.onEndQuiz()} visible={false}></i-button>
+            <i-button id="btnPrev" grid={{ area: 'BtnPrev' }} width={35} height={35} background={{ color: buttonColor || '#fff' }}
+              icon={{ name: 'angle-left', fill: systemFontColor || '#000' }} border={{ radius: '50%' }} class={buttonStyle}
+              onClick={() => this.onPrevQuestion()}></i-button>
+            <i-button id="btnNext" grid={{ area: 'BtnNext' }} width={35} height={35} background={{ color: buttonColor || '#fff' }}
+              icon={{ name: 'angle-right', fill: systemFontColor || '#000' }} border={{ radius: '50%' }} class={buttonStyle}
+              onClick={() => this.onNextQuestion(this._data)}></i-button>
+            <i-button id="btnEndQuiz" grid={{ area: 'BtnNext' }} width={35} height={35} background={{ color: buttonColor || '#fff' }}
+              icon={{ name: 'check-circle', fill: systemFontColor || '#000' }} border={{ radius: '50%' }} class={buttonStyle}
+              onClick={() => this.onEndQuiz()} visible={false}></i-button>
 
-            <i-label grid={{ area: 'lblNumberOfQuestion' }} caption={`Question ${this.currentQuestionIndex + 1} of ${this._data.questions.length}`} font={{ color: systemFontColor }} ></i-label>
-            <i-label grid={{ area: 'lblNumberOfAttempted' }} caption={`${(currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt : 0} attempted`} font={{ color: systemFontColor }} ></i-label>
+            <i-label grid={{ area: 'lblNumberOfQuestion' }} caption={`Question ${this.currentQuestionIndex + 1} of ${this._data.questions.length}`}
+              font={{ color: systemFontColor || '#000' }} ></i-label>
+            <i-label grid={{ area: 'lblNumberOfAttempted' }} caption={`${(currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt : 0} attempted`}
+              font={{ color: systemFontColor || '#000' }} ></i-label>
 
           </i-grid-layout>);
 
         quizWrapper.append(gridBtnStack);
 
-        if (this.currentQuestionIndex == 0) this.btnPrev.classList.add('disabled');
-        if (this.currentQuestionIndex == this._data.questions.length - 1) this.btnNext.classList.add('disabled');
+        if (this.currentQuestionIndex == 0) this.btnPrev.classList.add('disabled-btn');
+        if (this.currentQuestionIndex == this._data.questions.length - 1) this.btnNext.classList.add('disabled-btn');
 
         // const isNotAllSubmitted = this._data.questions.find(q => !q.revealed);
         if (/*!isNotAllSubmitted && */this.currentQuestionIndex == this._data.questions.length - 1) {
@@ -554,15 +655,18 @@ export default class ScomQuiz extends Module {
             horizontalAlignment='center' zIndex={10}>
             <i-label caption="SUMMARY"></i-label>
           </i-hstack>
-          <i-hstack horizontalAlignment='space-between' width={'50%'} minWidth={'300px'} class={`${resultPnlStyle} correct`}>
-            <i-label caption="Correct" font={{ color: 'var(--colors-success-main)', bold: true }}></i-label>
-            <i-label caption={`${numberOfCorrect}`} font={{ color: 'var(--colors-success-main)', bold: true }}></i-label>
+          <i-hstack horizontalAlignment='space-between' width={'50%'} minWidth={'300px'} class={`${resultPnlStyle} correct`}
+            background={{ color: backgroundColor || '#fff' }} border={{ width: 1, style: 'solid', color: borderColor || "#FFFFFF" }}>
+            <i-label caption="Correct" font={{ color: '#4caf50', bold: true }}></i-label>
+            <i-label caption={`${numberOfCorrect}`} font={{ color: '#4caf50', bold: true }}></i-label>
           </i-hstack>
-          <i-hstack horizontalAlignment='space-between' width={'50%'} minWidth={'300px'} class={`${resultPnlStyle} incorrect`}>
-            <i-label caption="Incorrect" font={{ color: 'var(--colors-error-main)', bold: true }}></i-label>
-            <i-label caption={`${numberOfIncorrect}`} font={{ color: 'var(--colors-error-main)', bold: true }}></i-label>
+          <i-hstack horizontalAlignment='space-between' width={'50%'} minWidth={'300px'} class={`${resultPnlStyle} incorrect`}
+            background={{ color: backgroundColor || '#fff' }} border={{ width: 1, style: 'solid', color: borderColor || "#FFFFFF" }}>
+            <i-label caption="Incorrect" font={{ color: '#f44336', bold: true }}></i-label>
+            <i-label caption={`${numberOfIncorrect}`} font={{ color: '#f44336', bold: true }}></i-label>
           </i-hstack>
-          <i-hstack horizontalAlignment='space-between' width={'50%'} minWidth={'300px'} class={`${resultPnlStyle} unanswered`}>
+          <i-hstack horizontalAlignment='space-between' width={'50%'} minWidth={'300px'} class={`${resultPnlStyle} unanswered`}
+            background={{ color: backgroundColor || '#fff' }} border={{ width: 1, style: 'solid', color: borderColor || "#FFFFFF" }}>
             <i-label caption="Unanswered" font={{ color: 'var(--divider)', bold: true }}></i-label>
             <i-label caption={`${numberOfUnanswered}`} font={{ color: 'var(--divider)', bold: true }}></i-label>
           </i-hstack>
@@ -624,7 +728,7 @@ export default class ScomQuiz extends Module {
 
   onSubmit(control: Control) {
     const currentQuestionData = this._data.questions[this.currentQuestionIndex];
-    const isDisabled = control.classList.contains('disabled')
+    const isDisabled = control.classList.contains('disabled-btn')
     if (isDisabled) return;
 
     currentQuestionData.numberOfAttempt = (currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt + 1 : 1;
@@ -655,12 +759,12 @@ export default class ScomQuiz extends Module {
         if (!this.selectedAnswerIdx.includes(answerIdx)) this.selectedAnswerIdx.push(answerIdx)
       }
       const selectedAnswers = control.closest('i-scom-quiz').querySelectorAll('.answer.selected');
-      if (selectedAnswers.length > 1) this.btnSubmit.classList.remove('disabled')
-      else this.btnSubmit.classList.add('disabled')
+      if (selectedAnswers.length > 1) this.btnSubmit.classList.remove('disabled-btn')
+      else this.btnSubmit.classList.add('disabled-btn')
 
     } else {
       const answer = control.closest('i-scom-quiz').querySelectorAll('.answer');
-      this.btnSubmit.classList.remove('disabled')
+      this.btnSubmit.classList.remove('disabled-btn')
       answer.forEach(elm => {
         elm.classList.remove('selected');
       })

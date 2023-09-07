@@ -5,8 +5,6 @@ export const containerStyle = Styles.style({
   overflow: 'hidden',
   margin: '0 auto',
   padding: '1rem 1rem',
-  border: '1px solid var(--divider)',
-  background: "var(--background-main)",
   $nest: {
     '&.answer': {
       transition: 'filter 0.3s',
@@ -21,8 +19,7 @@ export const containerStyle = Styles.style({
           opacity: 0,
           border: `1.5px solid var(--colors-primary-main)`,
           borderRadius: '0.25rem',
-          padding: '0.25rem 1.25rem !important',
-          background: "var(--background-main)"
+          padding: '0.25rem 1.25rem !important'
         },
         '.answer-label-outer': {
           position: 'absolute',
@@ -30,8 +27,7 @@ export const containerStyle = Styles.style({
           opacity: 0,
           border: `1.5px solid var(--colors-primary-main)`,
           borderRadius: '0.25rem',
-          padding: '0.25rem 1.25rem !important',
-          background: "var(--background-main)"
+          padding: '0.25rem 1.25rem !important'
         },
         '&.selected': {
           $nest: {
@@ -123,7 +119,6 @@ export const containerStyle = Styles.style({
 })
 
 export const buttonStyle = Styles.style({
-  background: "var(--background-main)",
   padding: '1rem 0.5rem',
   border: '1px solid var(--divider)',
   $nest: {
@@ -133,28 +128,16 @@ export const buttonStyle = Styles.style({
     '> i-icon:hover': {
       fill: `${Theme.colors.primary.contrastText} !important`
     },
-    '&:.disabled': {
-      background: "var(--background-main)",
-      cursor: 'not-allowed !important',
-      $nest: {
-        '&:hover': {
-          filter: 'brightness(0.1)',
-          cursor: 'not-allowed !important'
-        },
-        '> i-icon:hover': {
-          fill: `${Theme.colors.primary.contrastText} !important`,
-          cursor: 'not-allowed !important'
-        }
-      }
+    '&.disabled-btn': {
+      cursor: 'no-drop !important',
+      filter: 'brightness(0.85)'
     }
   }
 })
 
 export const resultPnlStyle = Styles.style({
-  background: "var(--background-main)",
   padding: '1rem 1.5rem',
   borderRadius: '0.25rem',
-  border: '1px solid var(--divider)',
   $nest: {
     '&.unanswered': {
       border: '1px solid var(--divider)',
