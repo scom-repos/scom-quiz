@@ -15,7 +15,16 @@ export const containerStyle = Styles.style({
         '&:hover': {
           filter: 'brightness(0.95)'
         },
-        '.answer-label': {
+        '.answer-label-inner': {
+          position: 'absolute',
+          top: '-14px',
+          opacity: 0,
+          border: `1.5px solid var(--colors-primary-main)`,
+          borderRadius: '0.25rem',
+          padding: '0.25rem 1.25rem !important',
+          background: "var(--background-main)"
+        },
+        '.answer-label-outer': {
           position: 'absolute',
           top: '-14px',
           opacity: 0,
@@ -34,14 +43,14 @@ export const containerStyle = Styles.style({
             '.answer-icon': {
               opacity: 1
             },
-            '.answer-label': {
+            '.answer-label-inner': {
               opacity: 1,
               border: `1.5px solid var(--colors-primary-main)`,
               // color: `var(--colors-primary-main) !important`
             }
           }
         },
-        '&.correct': {
+        '&.selected-correct': {
           $nest: {
             '.inner-container': {
               border: `1.5px solid var(--colors-success-main)`,
@@ -51,14 +60,14 @@ export const containerStyle = Styles.style({
             '.answer-icon': {
               opacity: 1
             },
-            '.answer-label': {
+            '.answer-label-inner': {
               opacity: 1,
               border: `1.5px solid var(--colors-success-main)`,
               // color: `var(--colors-success-main) !important`
             }
           }
         },
-        '&.incorrect': {
+        '&.selected-incorrect': {
           $nest: {
             '.inner-container': {
               border: `1.5px solid var(--colors-error-main)`,
@@ -68,7 +77,7 @@ export const containerStyle = Styles.style({
             '.answer-icon': {
               opacity: 1
             },
-            '.answer-label': {
+            '.answer-label-inner': {
               opacity: 1,
               border: `1.5px solid var(--colors-error-main)`,
               // color: `var(--colors-error-main) !important`

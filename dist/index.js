@@ -38,7 +38,16 @@ define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/componen
                     '&:hover': {
                         filter: 'brightness(0.95)'
                     },
-                    '.answer-label': {
+                    '.answer-label-inner': {
+                        position: 'absolute',
+                        top: '-14px',
+                        opacity: 0,
+                        border: `1.5px solid var(--colors-primary-main)`,
+                        borderRadius: '0.25rem',
+                        padding: '0.25rem 1.25rem !important',
+                        background: "var(--background-main)"
+                    },
+                    '.answer-label-outer': {
                         position: 'absolute',
                         top: '-14px',
                         opacity: 0,
@@ -57,7 +66,7 @@ define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/componen
                             '.answer-icon': {
                                 opacity: 1
                             },
-                            '.answer-label': {
+                            '.answer-label-inner': {
                                 opacity: 1,
                                 border: `1.5px solid var(--colors-primary-main)`,
                                 // color: `var(--colors-primary-main) !important`
@@ -74,7 +83,7 @@ define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/componen
                             '.answer-icon': {
                                 opacity: 1
                             },
-                            '.answer-label': {
+                            '.answer-label-inner': {
                                 opacity: 1,
                                 border: `1.5px solid var(--colors-success-main)`,
                                 // color: `var(--colors-success-main) !important`
@@ -91,7 +100,7 @@ define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/componen
                             '.answer-icon': {
                                 opacity: 1
                             },
-                            '.answer-label': {
+                            '.answer-label-inner': {
                                 opacity: 1,
                                 border: `1.5px solid var(--colors-error-main)`,
                                 // color: `var(--colors-error-main) !important`
@@ -584,11 +593,13 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                     quizWrapper.append(question);
                     // answers
                     for (let i = 0; i < currentQuestionData.answers.length; i++) {
-                        const lblTxt = this.$render("i-label", { caption: "Your Answer", font: { color: 'var(--colors-primary-main)' } });
+                        const lblTxtInner = this.$render("i-label", { caption: "Your Answer", font: { color: 'var(--colors-primary-main)' } });
                         const icon = this.$render("i-icon", { id: "answerIcon", name: "circle", fill: Theme.colors.primary.main, height: 16, width: 16, class: 'answer-icon', margin: { right: '1rem' } });
-                        const answer = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle, gap: "0.5rem", verticalAlignment: 'center', onClick: (control, event) => this.onClickedAnswer(control, i) },
+                        const answer = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle, gap: "0.5rem", verticalAlignment: 'center', position: 'relative', onClick: (control, event) => this.onClickedAnswer(control, i) },
+                            this.$render("i-panel", { class: 'answer-label-outer', margin: { left: '1rem' }, zIndex: "10" },
+                                this.$render("i-label", { caption: "Correct Answer", font: { color: 'var(--colors-primary-main)' } })),
                             this.$render("i-hstack", { class: 'inner-container', zIndex: "5", width: "100%", position: "relative", padding: { top: 0, left: 0, right: 0, bottom: 0 }, margin: { top: 0, left: 0, right: 0, bottom: 0 } },
-                                this.$render("i-panel", { class: 'answer-label', margin: { left: '1rem' }, zIndex: "10" }, lblTxt),
+                                this.$render("i-panel", { class: 'answer-label-inner', margin: { left: '1rem' }, zIndex: "10" }, lblTxtInner),
                                 icon,
                                 this.$render("i-label", { caption: `${this.numberToLetter(i)})`, margin: { right: '0.5rem' }, font: { color: answerFontColor } }),
                                 this.$render("i-label", { caption: currentQuestionData.answers[i].content, font: { color: answerFontColor } }))));
@@ -597,24 +608,24 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                             if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct) {
                                 // selected correct answer
                                 answer.classList.add('correct');
-                                lblTxt.caption = "Your answer";
-                                lblTxt.font = { color: 'var(--colors-success-main)' };
+                                lblTxtInner.caption = "Your answer";
+                                lblTxtInner.font = { color: 'var(--colors-success-main)' };
                                 icon.name = 'check-circle';
                                 icon.fill = "var(--colors-success-main)";
                             }
                             else if (currentQuestionData.answers[i].selected && !currentQuestionData.answers[i].correct) {
                                 // selected wrong answer
                                 answer.classList.add('incorrect');
-                                lblTxt.caption = "Your answer";
-                                lblTxt.font = { color: 'var(--colors-error-main)' };
+                                lblTxtInner.caption = "Your answer";
+                                lblTxtInner.font = { color: 'var(--colors-error-main)' };
                                 icon.name = 'times-circle';
                                 icon.fill = "var(--colors-error-main)";
                             }
                             else if (currentQuestionData.answers[i].correct) {
                                 // display correct answer
                                 answer.classList.add('correct');
-                                lblTxt.caption = "Correct answer";
-                                lblTxt.font = { color: 'var(--colors-success-main)' };
+                                lblTxtInner.caption = "Correct answer";
+                                lblTxtInner.font = { color: 'var(--colors-success-main)' };
                                 icon.name = 'check-circle';
                                 icon.fill = "var(--colors-success-main)";
                             }

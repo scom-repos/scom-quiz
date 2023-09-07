@@ -412,7 +412,8 @@ export default class ScomQuiz extends Module {
 
         // answers
         for (let i = 0; i < currentQuestionData.answers.length; i++) {
-          const lblTxt = <i-label caption="Your Answer" font={{ color: 'var(--colors-primary-main)' }}></i-label> as Label;
+          const lblTxtInner = <i-label caption="Your Answer" font={{ color: 'var(--colors-primary-main)' }}></i-label> as Label;
+          const lblTxtOuter = <i-label caption="Correct Answer" font={{ color: 'var(--colors-success-main)' }}></i-label> as Label;
           const icon = <i-icon
             id="answerIcon"
             name="circle"
@@ -422,15 +423,19 @@ export default class ScomQuiz extends Module {
             margin={{ right: '1rem' }}
           ></i-icon> as Icon;
 
-          const answer = (<i-hstack width="100%" class={containerStyle} gap={"0.5rem"} verticalAlignment='center'
+          const answer = (<i-hstack width="100%" class={containerStyle} gap={"0.5rem"}
+            verticalAlignment='center' position='relative'
             onClick={(control, event) => this.onClickedAnswer(control, i)}>
+            <i-panel class='answer-label-outer' margin={{ left: '1rem' }} zIndex="10">
+              {lblTxtOuter}
+            </i-panel>
             <i-hstack class='inner-container' zIndex="5"
               width="100%"
               position="relative"
               padding={{ top: 0, left: 0, right: 0, bottom: 0 }}
               margin={{ top: 0, left: 0, right: 0, bottom: 0 }}>
-              <i-panel class='answer-label' margin={{ left: '1rem' }} zIndex="10">
-                {lblTxt}
+              <i-panel class='answer-label-inner' margin={{ left: '1rem' }} zIndex="10">
+                {lblTxtInner}
               </i-panel>
               {icon}
               <i-label caption={`${this.numberToLetter(i)})`} margin={{ right: '0.5rem' }} font={{ color: answerFontColor }}></i-label>
@@ -442,23 +447,20 @@ export default class ScomQuiz extends Module {
           if (currentQuestionData.revealed) {
             if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct) {
               // selected correct answer
-              answer.classList.add('correct');
-              lblTxt.caption = "Your answer";
-              lblTxt.font = { color: 'var(--colors-success-main)' }
+              answer.classList.add('selected-correct');
+              lblTxtInner.font = { color: 'var(--colors-success-main)' }
               icon.name = 'check-circle';
               icon.fill = "var(--colors-success-main)"
             } else if (currentQuestionData.answers[i].selected && !currentQuestionData.answers[i].correct) {
               // selected wrong answer
-              answer.classList.add('incorrect');
-              lblTxt.caption = "Your answer";
-              lblTxt.font = { color: 'var(--colors-error-main)' }
+              answer.classList.add('selected-incorrect');
+              lblTxtInner.font = { color: 'var(--colors-error-main)' }
               icon.name = 'times-circle';
               icon.fill = "var(--colors-error-main)"
             } else if (currentQuestionData.answers[i].correct) {
               // display correct answer
-              answer.classList.add('correct');
-              lblTxt.caption = "Correct answer";
-              lblTxt.font = { color: 'var(--colors-success-main)' }
+              answer.classList.add('show-correct');
+              lblTxtInner.font = { color: 'var(--colors-success-main)' }
               icon.name = 'check-circle';
               icon.fill = "var(--colors-success-main)"
             }
