@@ -92,6 +92,7 @@ declare module "@scom/scom-quiz" {
         }[];
         private numberToLetter;
         private onUpdateBlock;
+        checkIfMultipleAnswer(): boolean;
         onResetQuiz(): void;
         onCheckAnswer(): void;
         onEndQuiz(): void;

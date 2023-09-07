@@ -2,61 +2,64 @@ export default {
   "defaultBuilderData": {
     questions: [
       {
-        question: 'What is the time, and space complexity of the following code:',
+        question: 'The transaction Merkle Tree root value in a Bitcoin block is calculated using,',
         answers: [
           {
-            content: 'O(N) time, O(1) space',
+            content: 'Hash of transactions',
             correct: true
           },
           {
-            content: 'O(N * M) time, O(N) space',
+            content: 'Previous block\'s hash',
             correct: false
           },
           {
-            content: 'O(N * M) time, O(N + M) space',
+            content: 'Number of transactions',
+            correct: false
+          },
+          {
+            content: 'None of the above',
             correct: false
           }
         ]
       },
       {
-        question: 'What is the time complexity of the following code:',
+        question: 'The height of the block is the ____ in the chain between it and the genesis block.',
         answers: [
           {
-            content: 'O(N*N)',
+            content: 'Metadata that is',
             correct: false
           },
           {
-            content: 'O(N)',
-            correct: false
-          },
-          {
-            content: 'O(N*log(N))',
-            correct: false
-          },
-          {
-            content: 'O(N * Sqrt(N))',
+            content: 'Number of blocks',
             correct: true
+          },
+          {
+            content: 'Merkle tree hash',
+            correct: false
+          },
+          {
+            content: 'Size of the memory cache',
+            correct: false
           }
         ]
-      },
-      {
-        question: 'What is the time complexity of the following code:',
+      }, {
+        question: 'What type of hash is used when there is a fixed number of items to be hashed, such as the items in a block header, and we are verifying the composite block integrity?',
         answers: [
           {
-            content: 'O(n^2)',
+            content: 'Tree-structured Hash',
             correct: false
           },
           {
-            content: 'O(n^2Logn)',
+            content: 'Complex hash',
             correct: false
           },
           {
-            content: 'O(n)',
-            correct: false
-          },
-          {
-            content: 'O(nLogn)',
+            content: 'Simple Hash',
             correct: true
+          },
+          {
+            content: 'Either',
+            correct: false
           }
         ]
       }

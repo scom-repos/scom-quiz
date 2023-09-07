@@ -160,7 +160,7 @@ declare global {
 export default class ScomQuiz extends Module {
   private pnlQuiz: Panel;
   private currentQuestionIndex: number = 0;
-  private selectedAnswerIdx: number = 0;
+  private selectedAnswerIdx: number[] = [];
   private btnPrev: Button;
   private btnNext: Button;
   private btnSubmit: Button;
@@ -403,11 +403,17 @@ export default class ScomQuiz extends Module {
 
     if (this.pnlQuiz) {
       if (!this.isQuizEnd) {
+        const isMultipleChoice = this.checkIfMultipleAnswer();
         // question
+        const hintNumber = <i-label caption={'*Select more than 1 answer'} font={{ size: '12px', color: questionFontColor || Theme.colors.secondary }} visible={false}></i-label>;
         const question = (<i-hstack width="100%" class={containerStyle}>
           <i-label caption={`${this.currentQuestionIndex + 1}`} margin={{ right: '1rem' }} font={{ bold: true, size: '20px', color: questionFontColor }}></i-label>
-          <i-label caption={`${currentQuestionData.question}`} font={{ size: '20px', color: questionFontColor }}></i-label>
+          <i-vstack verticalAlignment='start' gap={'0.5rem'}>
+            <i-label caption={`${currentQuestionData.question}`} font={{ size: '20px', color: questionFontColor }}></i-label>
+            {hintNumber}
+          </i-vstack>
         </i-hstack>);
+        if (isMultipleChoice) hintNumber.visible = true;
         quizWrapper.append(question);
 
         // answers
@@ -444,13 +450,25 @@ export default class ScomQuiz extends Module {
           </i-hstack>)
           answer.classList.add('answer');
 
+          // check if all correct answer are chosen
+          const isAllCorrectAnsChosen = currentQuestionData.answers.find(a => a.correct && !a.selected) ? false : true;
+          const isAllIncorrectAnsNotChosen = currentQuestionData.answers.find(a => !a.correct && a.selected) ? false : true;
+
+          const isCorrect = isAllCorrectAnsChosen && isAllIncorrectAnsNotChosen;
           if (currentQuestionData.revealed) {
-            if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct) {
-              // selected correct answer
+            if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct && isCorrect) {
+              // selected all correct answers
               answer.classList.add('selected-correct');
               lblTxtInner.font = { color: 'var(--colors-success-main)' }
               icon.name = 'check-circle';
               icon.fill = "var(--colors-success-main)"
+            } else if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct && !isCorrect) {
+              // selected partial correct answers
+              answer.classList.add('selected-incorrect');
+              answer.classList.add('show-correct');
+              lblTxtInner.font = { color: 'var(--colors-error-main)' }
+              icon.name = 'times-circle';
+              icon.fill = "var(--colors-error-main)"
             } else if (currentQuestionData.answers[i].selected && !currentQuestionData.answers[i].correct) {
               // selected wrong answer
               answer.classList.add('selected-incorrect');
@@ -460,7 +478,6 @@ export default class ScomQuiz extends Module {
             } else if (currentQuestionData.answers[i].correct) {
               // display correct answer
               answer.classList.add('show-correct');
-              lblTxtInner.font = { color: 'var(--colors-success-main)' }
               icon.name = 'check-circle';
               icon.fill = "var(--colors-success-main)"
             }
@@ -497,7 +514,7 @@ export default class ScomQuiz extends Module {
         if (this.currentQuestionIndex == 0) this.btnPrev.classList.add('disabled');
         if (this.currentQuestionIndex == this._data.questions.length - 1) this.btnNext.classList.add('disabled');
 
-        const isNotAllSubmitted = this._data.questions.find(q => !q.revealed);
+        // const isNotAllSubmitted = this._data.questions.find(q => !q.revealed);
         if (/*!isNotAllSubmitted && */this.currentQuestionIndex == this._data.questions.length - 1) {
           (this.querySelector('#btnEndQuiz') as Button).visible = true;
           (this.querySelector('#btnNext') as Button).visible = false;
@@ -560,7 +577,16 @@ export default class ScomQuiz extends Module {
     }
   }
 
+  checkIfMultipleAnswer(): boolean {
+    const numberOfCorrectAnswer = this._data.questions[this.currentQuestionIndex].answers.reduce((accumulator, a) => {
+      if (a.correct) return accumulator + 1;
+      else return accumulator;
+    }, 0);
+    return numberOfCorrectAnswer > 1;
+  }
+
   onResetQuiz() {
+    this.selectedAnswerIdx = [];
     this._data.questions.forEach(q => {
       q.revealed = false;
       q.numberOfAttempt = 0;
@@ -588,6 +614,7 @@ export default class ScomQuiz extends Module {
   onReset() {
     const currentQuestionData = this._data.questions[this.currentQuestionIndex];
     currentQuestionData.numberOfAttempt = 0;
+    this.selectedAnswerIdx = [];
     currentQuestionData.answers.forEach(ans => {
       ans.selected = false;
     })
@@ -597,14 +624,16 @@ export default class ScomQuiz extends Module {
 
   onSubmit(control: Control) {
     const currentQuestionData = this._data.questions[this.currentQuestionIndex];
-    const isSelectedAnswer = control.closest('i-scom-quiz').querySelector('.answer.selected');
-    if (!isSelectedAnswer) return;
+    const isDisabled = control.classList.contains('disabled')
+    if (isDisabled) return;
 
     currentQuestionData.numberOfAttempt = (currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt + 1 : 1;
     currentQuestionData.answers.forEach(ans => {
       ans.selected = false;
     })
-    currentQuestionData.answers[this.selectedAnswerIdx].selected = true;
+    this.selectedAnswerIdx.forEach(s => {
+      currentQuestionData.answers[s].selected = true;
+    })
     currentQuestionData.revealed = true;
     this.onUpdateBlock(this.tag);
   }
@@ -612,27 +641,45 @@ export default class ScomQuiz extends Module {
   onClickedAnswer(control: Control, answerIdx: number) {
     if (this._data.questions[this.currentQuestionIndex].revealed) return;
 
-    const answer = control.closest('i-scom-quiz').querySelectorAll('.answer');
-    this.btnSubmit.classList.remove('disabled')
-    answer.forEach(elm => {
-      elm.classList.remove('selected');
-    })
+    const isMultipleChoice = this.checkIfMultipleAnswer();
+
     const targetAnswer = control.closest('.answer');
-    if (targetAnswer) {
-      targetAnswer.classList.add('selected');
-      this.selectedAnswerIdx = answerIdx;
-    };
+    if (!targetAnswer) return;
+
+    if (isMultipleChoice) {
+      if (targetAnswer.classList.contains('selected')) {
+        targetAnswer.classList.remove('selected')
+        this.selectedAnswerIdx = this.selectedAnswerIdx.filter(item => item !== answerIdx);
+      } else {
+        targetAnswer.classList.add('selected')
+        if (!this.selectedAnswerIdx.includes(answerIdx)) this.selectedAnswerIdx.push(answerIdx)
+      }
+      const selectedAnswers = control.closest('i-scom-quiz').querySelectorAll('.answer.selected');
+      if (selectedAnswers.length > 1) this.btnSubmit.classList.remove('disabled')
+      else this.btnSubmit.classList.add('disabled')
+
+    } else {
+      const answer = control.closest('i-scom-quiz').querySelectorAll('.answer');
+      this.btnSubmit.classList.remove('disabled')
+      answer.forEach(elm => {
+        elm.classList.remove('selected');
+      })
+      targetAnswer.classList.add('selected')
+      this.selectedAnswerIdx = [answerIdx]
+    }
   }
 
   onPrevQuestion() {
     if (this.currentQuestionIndex == 0) return;
     this.currentQuestionIndex--;
+    this.selectedAnswerIdx = [];
     this.onUpdateBlock(this.tag);
   }
 
   onNextQuestion(data: IConfig) {
     if (this.currentQuestionIndex == data.questions.length - 1) return;
     this.currentQuestionIndex++;
+    this.selectedAnswerIdx = [];
     this.onUpdateBlock(this.tag);
   }
 

@@ -83,6 +83,26 @@ export const containerStyle = Styles.style({
               // color: `var(--colors-error-main) !important`
             }
           }
+        },
+        '&.show-correct': {
+          zIndex: 15,
+          border: `1.5px solid var(--colors-success-main)`,
+          borderRadius: '0.25rem',
+          padding: '1.5rem 1rem !important',
+          overflow: 'visible',
+          $nest: {
+            '.inner-container': {
+
+            },
+            '.answer-icon': {
+              opacity: 1
+            },
+            '.answer-label-outer': {
+              opacity: 1,
+              border: `1.5px solid var(--colors-success-main)`,
+              // color: `var(--colors-error-main) !important`
+            }
+          }
         }
       }
     },
@@ -115,6 +135,7 @@ export const buttonStyle = Styles.style({
     },
     '&:.disabled': {
       background: "var(--background-main)",
+      cursor: 'not-allowed !important',
       $nest: {
         '&:hover': {
           filter: 'brightness(0.1)',

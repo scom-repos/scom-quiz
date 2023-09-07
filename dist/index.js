@@ -73,7 +73,7 @@ define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/componen
                             }
                         }
                     },
-                    '&.correct': {
+                    '&.selected-correct': {
                         $nest: {
                             '.inner-container': {
                                 border: `1.5px solid var(--colors-success-main)`,
@@ -90,7 +90,7 @@ define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/componen
                             }
                         }
                     },
-                    '&.incorrect': {
+                    '&.selected-incorrect': {
                         $nest: {
                             '.inner-container': {
                                 border: `1.5px solid var(--colors-error-main)`,
@@ -103,6 +103,24 @@ define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/componen
                             '.answer-label-inner': {
                                 opacity: 1,
                                 border: `1.5px solid var(--colors-error-main)`,
+                                // color: `var(--colors-error-main) !important`
+                            }
+                        }
+                    },
+                    '&.show-correct': {
+                        zIndex: 15,
+                        border: `1.5px solid var(--colors-success-main)`,
+                        borderRadius: '0.25rem',
+                        padding: '1.5rem 1rem !important',
+                        overflow: 'visible',
+                        $nest: {
+                            '.inner-container': {},
+                            '.answer-icon': {
+                                opacity: 1
+                            },
+                            '.answer-label-outer': {
+                                opacity: 1,
+                                border: `1.5px solid var(--colors-success-main)`,
                                 // color: `var(--colors-error-main) !important`
                             }
                         }
@@ -137,6 +155,7 @@ define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/componen
             },
             '&:.disabled': {
                 background: "var(--background-main)",
+                cursor: 'not-allowed !important',
                 $nest: {
                     '&:hover': {
                         filter: 'brightness(0.1)',
@@ -176,61 +195,64 @@ define("@scom/scom-quiz/data.json.ts", ["require", "exports"], function (require
         "defaultBuilderData": {
             questions: [
                 {
-                    question: 'What is the time, and space complexity of the following code:',
+                    question: 'The transaction Merkle Tree root value in a Bitcoin block is calculated using,',
                     answers: [
                         {
-                            content: 'O(N) time, O(1) space',
+                            content: 'Hash of transactions',
                             correct: true
                         },
                         {
-                            content: 'O(N * M) time, O(N) space',
+                            content: 'Previous block\'s hash',
                             correct: false
                         },
                         {
-                            content: 'O(N * M) time, O(N + M) space',
+                            content: 'Number of transactions',
+                            correct: false
+                        },
+                        {
+                            content: 'None of the above',
                             correct: false
                         }
                     ]
                 },
                 {
-                    question: 'What is the time complexity of the following code:',
+                    question: 'The height of the block is the ____ in the chain between it and the genesis block.',
                     answers: [
                         {
-                            content: 'O(N*N)',
+                            content: 'Metadata that is',
                             correct: false
                         },
                         {
-                            content: 'O(N)',
-                            correct: false
-                        },
-                        {
-                            content: 'O(N*log(N))',
-                            correct: false
-                        },
-                        {
-                            content: 'O(N * Sqrt(N))',
+                            content: 'Number of blocks',
                             correct: true
+                        },
+                        {
+                            content: 'Merkle tree hash',
+                            correct: false
+                        },
+                        {
+                            content: 'Size of the memory cache',
+                            correct: false
                         }
                     ]
-                },
-                {
-                    question: 'What is the time complexity of the following code:',
+                }, {
+                    question: 'What type of hash is used when there is a fixed number of items to be hashed, such as the items in a block header, and we are verifying the composite block integrity?',
                     answers: [
                         {
-                            content: 'O(n^2)',
+                            content: 'Tree-structured Hash',
                             correct: false
                         },
                         {
-                            content: 'O(n^2Logn)',
+                            content: 'Complex hash',
                             correct: false
                         },
                         {
-                            content: 'O(n)',
-                            correct: false
-                        },
-                        {
-                            content: 'O(nLogn)',
+                            content: 'Simple Hash',
                             correct: true
+                        },
+                        {
+                            content: 'Either',
+                            correct: false
                         }
                     ]
                 }
@@ -373,7 +395,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
         constructor(parent, options) {
             super(parent, options);
             this.currentQuestionIndex = 0;
-            this.selectedAnswerIdx = 0;
+            this.selectedAnswerIdx = [];
             this.isQuizEnd = false;
             this._data = { questions: [] };
             this.tag = {};
@@ -586,46 +608,60 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
             const quizWrapper = (this.$render("i-vstack", null));
             if (this.pnlQuiz) {
                 if (!this.isQuizEnd) {
+                    const isMultipleChoice = this.checkIfMultipleAnswer();
                     // question
+                    const hintNumber = this.$render("i-label", { caption: '*Select more than 1 answer', font: { size: '12px', color: questionFontColor || Theme.colors.secondary }, visible: false });
                     const question = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle },
                         this.$render("i-label", { caption: `${this.currentQuestionIndex + 1}`, margin: { right: '1rem' }, font: { bold: true, size: '20px', color: questionFontColor } }),
-                        this.$render("i-label", { caption: `${currentQuestionData.question}`, font: { size: '20px', color: questionFontColor } })));
+                        this.$render("i-vstack", { verticalAlignment: 'start', gap: '0.5rem' },
+                            this.$render("i-label", { caption: `${currentQuestionData.question}`, font: { size: '20px', color: questionFontColor } }),
+                            hintNumber)));
+                    if (isMultipleChoice)
+                        hintNumber.visible = true;
                     quizWrapper.append(question);
                     // answers
                     for (let i = 0; i < currentQuestionData.answers.length; i++) {
                         const lblTxtInner = this.$render("i-label", { caption: "Your Answer", font: { color: 'var(--colors-primary-main)' } });
+                        const lblTxtOuter = this.$render("i-label", { caption: "Correct Answer", font: { color: 'var(--colors-success-main)' } });
                         const icon = this.$render("i-icon", { id: "answerIcon", name: "circle", fill: Theme.colors.primary.main, height: 16, width: 16, class: 'answer-icon', margin: { right: '1rem' } });
                         const answer = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle, gap: "0.5rem", verticalAlignment: 'center', position: 'relative', onClick: (control, event) => this.onClickedAnswer(control, i) },
-                            this.$render("i-panel", { class: 'answer-label-outer', margin: { left: '1rem' }, zIndex: "10" },
-                                this.$render("i-label", { caption: "Correct Answer", font: { color: 'var(--colors-primary-main)' } })),
+                            this.$render("i-panel", { class: 'answer-label-outer', margin: { left: '1rem' }, zIndex: "10" }, lblTxtOuter),
                             this.$render("i-hstack", { class: 'inner-container', zIndex: "5", width: "100%", position: "relative", padding: { top: 0, left: 0, right: 0, bottom: 0 }, margin: { top: 0, left: 0, right: 0, bottom: 0 } },
                                 this.$render("i-panel", { class: 'answer-label-inner', margin: { left: '1rem' }, zIndex: "10" }, lblTxtInner),
                                 icon,
                                 this.$render("i-label", { caption: `${this.numberToLetter(i)})`, margin: { right: '0.5rem' }, font: { color: answerFontColor } }),
                                 this.$render("i-label", { caption: currentQuestionData.answers[i].content, font: { color: answerFontColor } }))));
                         answer.classList.add('answer');
+                        // check if all correct answer are chosen
+                        const isAllCorrectAnsChosen = currentQuestionData.answers.find(a => a.correct && !a.selected) ? false : true;
+                        const isAllIncorrectAnsNotChosen = currentQuestionData.answers.find(a => !a.correct && a.selected) ? false : true;
+                        const isCorrect = isAllCorrectAnsChosen && isAllIncorrectAnsNotChosen;
                         if (currentQuestionData.revealed) {
-                            if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct) {
-                                // selected correct answer
-                                answer.classList.add('correct');
-                                lblTxtInner.caption = "Your answer";
+                            if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct && isCorrect) {
+                                // selected all correct answers
+                                answer.classList.add('selected-correct');
                                 lblTxtInner.font = { color: 'var(--colors-success-main)' };
                                 icon.name = 'check-circle';
                                 icon.fill = "var(--colors-success-main)";
                             }
+                            else if (currentQuestionData.answers[i].selected && currentQuestionData.answers[i].correct && !isCorrect) {
+                                // selected partial correct answers
+                                answer.classList.add('selected-incorrect');
+                                answer.classList.add('show-correct');
+                                lblTxtInner.font = { color: 'var(--colors-error-main)' };
+                                icon.name = 'times-circle';
+                                icon.fill = "var(--colors-error-main)";
+                            }
                             else if (currentQuestionData.answers[i].selected && !currentQuestionData.answers[i].correct) {
                                 // selected wrong answer
-                                answer.classList.add('incorrect');
-                                lblTxtInner.caption = "Your answer";
+                                answer.classList.add('selected-incorrect');
                                 lblTxtInner.font = { color: 'var(--colors-error-main)' };
                                 icon.name = 'times-circle';
                                 icon.fill = "var(--colors-error-main)";
                             }
                             else if (currentQuestionData.answers[i].correct) {
                                 // display correct answer
-                                answer.classList.add('correct');
-                                lblTxtInner.caption = "Correct answer";
-                                lblTxtInner.font = { color: 'var(--colors-success-main)' };
+                                answer.classList.add('show-correct');
                                 icon.name = 'check-circle';
                                 icon.fill = "var(--colors-success-main)";
                             }
@@ -649,7 +685,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                         this.btnPrev.classList.add('disabled');
                     if (this.currentQuestionIndex == this._data.questions.length - 1)
                         this.btnNext.classList.add('disabled');
-                    const isNotAllSubmitted = this._data.questions.find(q => !q.revealed);
+                    // const isNotAllSubmitted = this._data.questions.find(q => !q.revealed);
                     if ( /*!isNotAllSubmitted && */this.currentQuestionIndex == this._data.questions.length - 1) {
                         this.querySelector('#btnEndQuiz').visible = true;
                         this.querySelector('#btnNext').visible = false;
@@ -694,7 +730,17 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                 this.pnlQuiz.append(quizWrapper);
             }
         }
+        checkIfMultipleAnswer() {
+            const numberOfCorrectAnswer = this._data.questions[this.currentQuestionIndex].answers.reduce((accumulator, a) => {
+                if (a.correct)
+                    return accumulator + 1;
+                else
+                    return accumulator;
+            }, 0);
+            return numberOfCorrectAnswer > 1;
+        }
         onResetQuiz() {
+            this.selectedAnswerIdx = [];
             this._data.questions.forEach(q => {
                 q.revealed = false;
                 q.numberOfAttempt = 0;
@@ -718,6 +764,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
         onReset() {
             const currentQuestionData = this._data.questions[this.currentQuestionIndex];
             currentQuestionData.numberOfAttempt = 0;
+            this.selectedAnswerIdx = [];
             currentQuestionData.answers.forEach(ans => {
                 ans.selected = false;
             });
@@ -726,42 +773,64 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
         }
         onSubmit(control) {
             const currentQuestionData = this._data.questions[this.currentQuestionIndex];
-            const isSelectedAnswer = control.closest('i-scom-quiz').querySelector('.answer.selected');
-            if (!isSelectedAnswer)
+            const isDisabled = control.classList.contains('disabled');
+            if (isDisabled)
                 return;
             currentQuestionData.numberOfAttempt = (currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt + 1 : 1;
             currentQuestionData.answers.forEach(ans => {
                 ans.selected = false;
             });
-            currentQuestionData.answers[this.selectedAnswerIdx].selected = true;
+            this.selectedAnswerIdx.forEach(s => {
+                currentQuestionData.answers[s].selected = true;
+            });
             currentQuestionData.revealed = true;
             this.onUpdateBlock(this.tag);
         }
         onClickedAnswer(control, answerIdx) {
             if (this._data.questions[this.currentQuestionIndex].revealed)
                 return;
-            const answer = control.closest('i-scom-quiz').querySelectorAll('.answer');
-            this.btnSubmit.classList.remove('disabled');
-            answer.forEach(elm => {
-                elm.classList.remove('selected');
-            });
+            const isMultipleChoice = this.checkIfMultipleAnswer();
             const targetAnswer = control.closest('.answer');
-            if (targetAnswer) {
-                targetAnswer.classList.add('selected');
-                this.selectedAnswerIdx = answerIdx;
+            if (!targetAnswer)
+                return;
+            if (isMultipleChoice) {
+                if (targetAnswer.classList.contains('selected')) {
+                    targetAnswer.classList.remove('selected');
+                    this.selectedAnswerIdx = this.selectedAnswerIdx.filter(item => item !== answerIdx);
+                }
+                else {
+                    targetAnswer.classList.add('selected');
+                    if (!this.selectedAnswerIdx.includes(answerIdx))
+                        this.selectedAnswerIdx.push(answerIdx);
+                }
+                const selectedAnswers = control.closest('i-scom-quiz').querySelectorAll('.answer.selected');
+                if (selectedAnswers.length > 1)
+                    this.btnSubmit.classList.remove('disabled');
+                else
+                    this.btnSubmit.classList.add('disabled');
             }
-            ;
+            else {
+                const answer = control.closest('i-scom-quiz').querySelectorAll('.answer');
+                this.btnSubmit.classList.remove('disabled');
+                answer.forEach(elm => {
+                    elm.classList.remove('selected');
+                });
+                targetAnswer.classList.add('selected');
+                this.selectedAnswerIdx = [answerIdx];
+            }
         }
         onPrevQuestion() {
             if (this.currentQuestionIndex == 0)
                 return;
             this.currentQuestionIndex--;
+            this.selectedAnswerIdx = [];
             this.onUpdateBlock(this.tag);
         }
         onNextQuestion(data) {
             if (this.currentQuestionIndex == data.questions.length - 1)
                 return;
             this.currentQuestionIndex++;
+            this.selectedAnswerIdx = [];
             this.onUpdateBlock(this.tag);
         }
         init() {
