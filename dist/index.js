@@ -790,8 +790,8 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                             this.$render("i-label", { caption: "Unanswered", font: { color: 'var(--divider)', bold: true } }),
                             this.$render("i-label", { caption: `${numberOfUnanswered}`, font: { color: 'var(--divider)', bold: true } })),
                         this.$render("i-hstack", { width: '100%', horizontalAlignment: 'center', gap: '1rem', padding: { left: '0.5rem', top: '1rem', right: '0.5rem', bottom: '1rem' } },
-                            this.$render("i-button", { caption: "Reset Quiz", rightIcon: { name: 'redo' }, class: index_css_1.buttonStyle, onClick: () => this.onResetQuiz() }),
-                            this.$render("i-button", { caption: "Check Answers", class: index_css_1.buttonStyle, onClick: () => this.onCheckAnswer() }))));
+                            this.$render("i-button", { caption: "Reset Quiz", background: { color: buttonColor || '#fff' }, font: { color: systemFontColor || '#000' }, rightIcon: { name: 'redo', fill: systemFontColor || '#000' }, class: index_css_1.buttonStyle, onClick: () => this.onResetQuiz() }),
+                            this.$render("i-button", { caption: "Check Answers", class: index_css_1.buttonStyle, onClick: () => this.onCheckAnswer(), font: { color: systemFontColor || '#000' }, background: { color: buttonColor || '#fff' } }))));
                     quizWrapper.append(pnlResult);
                 }
                 this.pnlQuiz.append(quizWrapper);

@@ -671,8 +671,10 @@ export default class ScomQuiz extends Module {
             <i-label caption={`${numberOfUnanswered}`} font={{ color: 'var(--divider)', bold: true }}></i-label>
           </i-hstack>
           <i-hstack width={'100%'} horizontalAlignment='center' gap={'1rem'} padding={{ left: '0.5rem', top: '1rem', right: '0.5rem', bottom: '1rem' }}>
-            <i-button caption="Reset Quiz" rightIcon={{ name: 'redo' }} class={buttonStyle} onClick={() => this.onResetQuiz()}></i-button>
-            <i-button caption="Check Answers" class={buttonStyle} onClick={() => this.onCheckAnswer()}></i-button>
+            <i-button caption="Reset Quiz" background={{ color: buttonColor || '#fff' }} font={{ color: systemFontColor || '#000' }}
+              rightIcon={{ name: 'redo', fill: systemFontColor || '#000' }} class={buttonStyle} onClick={() => this.onResetQuiz()}></i-button>
+            <i-button caption="Check Answers" class={buttonStyle} onClick={() => this.onCheckAnswer()}
+              font={{ color: systemFontColor || '#000' }} background={{ color: buttonColor || '#fff' }}></i-button>
           </i-hstack>
         </i-vstack>);
         quizWrapper.append(pnlResult);
