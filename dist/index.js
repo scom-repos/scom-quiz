@@ -22,10 +22,13 @@ define("@scom/scom-quiz/interface.ts", ["require", "exports"], function (require
 define("@scom/scom-quiz/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.resultPnlStyle = exports.buttonStyle = exports.containerStyle = void 0;
+    exports.resultPnlStyle = exports.buttonStyle = exports.containerStyle = exports.quizWrapperStyle = void 0;
     const Theme = components_1.Styles.Theme.ThemeVars;
+    exports.quizWrapperStyle = components_1.Styles.style({
+        overflow: 'auto'
+    });
     exports.containerStyle = components_1.Styles.style({
-        overflow: 'hidden',
+        // overflow: 'hidden',
         margin: '0 auto',
         padding: '1rem 1rem',
         $nest: {
@@ -672,13 +675,20 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
             //   [reorderAnswers[i], reorderAnswers[j]] = [reorderAnswers[j], reorderAnswers[i]];
             // }
             this.pnlQuiz.clearInnerHTML();
-            const quizWrapper = (this.$render("i-vstack", null));
+            const quizWrapper = (this.$render("i-vstack", { class: index_css_1.quizWrapperStyle, background: { color: backgroundColor || '#fff' } }));
+            if (height)
+                this.pnlQuiz.height = height;
             if (this.pnlQuiz) {
                 if (!this.isQuizEnd) {
+                    // const rowHeight = ['1.5fr', '1.5fr']
+                    // for (let i = 0; i < currentQuestionData.answers.length; i++) {
+                    //   rowHeight.splice(1, 0, '1fr');
+                    // }
+                    // quizWrapper.templateRows = rowHeight;
                     const isMultipleChoice = this.checkIfMultipleAnswer();
                     // question
                     const hintNumber = this.$render("i-label", { caption: '*Select more than 1 answer', font: { size: '12px', color: questionFontColor || '#808080' }, visible: false });
-                    const question = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle, background: { color: backgroundColor || '#fff' }, border: { width: 1, style: 'solid', color: borderColor || "#FFFFFF" } },
+                    const question = (this.$render("i-hstack", { width: "100%", class: index_css_1.containerStyle, position: 'relative', background: { color: backgroundColor || '#fff' }, border: { width: 1, style: 'solid', color: borderColor || "#FFFFFF" } },
                         this.$render("i-label", { caption: `${this.currentQuestionIndex + 1}`, margin: { right: '1rem' }, font: { bold: true, size: '20px', color: questionFontColor || '#000000' } }),
                         this.$render("i-vstack", { verticalAlignment: 'start', gap: '0.5rem' },
                             this.$render("i-label", { caption: `${currentQuestionData.question}`, font: { size: '20px', color: questionFontColor || '#000000' } }),
@@ -735,6 +745,9 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                         }
                         quizWrapper.append(answer);
                     }
+                    this.pnlQuiz.append(quizWrapper);
+                    if (height != 'auto')
+                        quizWrapper.height = height - 100;
                     // buttons
                     const gridBtnStack = (this.$render("i-grid-layout", { width: "100%", height: "100px", horizontalAlignment: "center", verticalAlignment: "center", templateColumns: ['repeat(5, 1fr)'], templateRows: ['repeat(2, 1fr)'], templateAreas: [
                             ["BtnReset", "BtnPrev", "lblNumberOfQuestion", "BtnNext", "BtnSubmit"],
@@ -747,7 +760,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                         this.$render("i-button", { id: "btnEndQuiz", grid: { area: 'BtnNext' }, width: 35, height: 35, background: { color: buttonColor || '#fff' }, icon: { name: 'check-circle', fill: systemFontColor || '#000' }, border: { radius: '50%' }, class: index_css_1.buttonStyle, onClick: () => this.onEndQuiz(), visible: false }),
                         this.$render("i-label", { grid: { area: 'lblNumberOfQuestion' }, caption: `Question ${this.currentQuestionIndex + 1} of ${this._data.questions.length}`, font: { color: systemFontColor || '#000' } }),
                         this.$render("i-label", { grid: { area: 'lblNumberOfAttempted' }, caption: `${(currentQuestionData.numberOfAttempt) ? currentQuestionData.numberOfAttempt : 0} attempted`, font: { color: systemFontColor || '#000' } })));
-                    quizWrapper.append(gridBtnStack);
+                    this.pnlQuiz.append(gridBtnStack);
                     if (this.currentQuestionIndex == 0)
                         this.btnPrev.classList.add('disabled-btn');
                     if (this.currentQuestionIndex == this._data.questions.length - 1)
@@ -776,7 +789,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                         return accumulator + 1;
                     }, 0);
                     const numberOfIncorrect = this._data.questions.length - numberOfCorrect - numberOfUnanswered;
-                    const pnlResult = (this.$render("i-vstack", { horizontalAlignment: 'center', position: 'relative', padding: { left: '2rem', top: '2rem', right: '2rem' }, border: { color: 'var(--divider)', radius: '0.25rem', width: 1, style: 'solid' } },
+                    const pnlResult = (this.$render("i-vstack", { horizontalAlignment: 'center', position: 'relative', padding: { left: '2rem', top: '2rem', right: '2rem' }, class: index_css_1.containerStyle },
                         this.$render("i-panel", { border: { color: 'var(--divider)', width: 0.5, style: 'solid' }, height: 0, width: '80%', position: "absolute", zIndex: 5, top: 'calc(20px + 2rem)' }),
                         this.$render("i-hstack", { width: 140, height: 40, padding: { left: '0.5rem', top: '0.5rem', right: '0.5rem', bottom: '0.5rem' }, margin: { bottom: '1.5rem' }, border: { color: 'var(--divider)', radius: '0.25rem', width: 1, style: 'solid' }, background: { color: "var(--background-main)" }, verticalAlignment: 'center', horizontalAlignment: 'center', zIndex: 10 },
                             this.$render("i-label", { caption: "SUMMARY" })),
@@ -788,13 +801,16 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
                             this.$render("i-label", { caption: `${numberOfIncorrect}`, font: { color: '#f44336', bold: true } })),
                         this.$render("i-hstack", { horizontalAlignment: 'space-between', width: '50%', minWidth: '300px', class: `${index_css_1.resultPnlStyle} unanswered`, background: { color: backgroundColor || '#fff' }, border: { width: 1, style: 'solid', color: borderColor || "#FFFFFF" } },
                             this.$render("i-label", { caption: "Unanswered", font: { color: 'var(--divider)', bold: true } }),
-                            this.$render("i-label", { caption: `${numberOfUnanswered}`, font: { color: 'var(--divider)', bold: true } })),
-                        this.$render("i-hstack", { width: '100%', horizontalAlignment: 'center', gap: '1rem', padding: { left: '0.5rem', top: '1rem', right: '0.5rem', bottom: '1rem' } },
-                            this.$render("i-button", { caption: "Reset Quiz", background: { color: buttonColor || '#fff' }, font: { color: systemFontColor || '#000' }, rightIcon: { name: 'redo', fill: systemFontColor || '#000' }, class: index_css_1.buttonStyle, onClick: () => this.onResetQuiz() }),
-                            this.$render("i-button", { caption: "Check Answers", class: index_css_1.buttonStyle, onClick: () => this.onCheckAnswer(), font: { color: systemFontColor || '#000' }, background: { color: buttonColor || '#fff' } }))));
+                            this.$render("i-label", { caption: `${numberOfUnanswered}`, font: { color: 'var(--divider)', bold: true } }))));
                     quizWrapper.append(pnlResult);
+                    if (height != 'auto')
+                        quizWrapper.height = height - 100;
+                    this.pnlQuiz.append(quizWrapper);
+                    const btnStack = (this.$render("i-hstack", { class: index_css_1.containerStyle, height: "100px", width: '100%', horizontalAlignment: 'center', gap: '1rem', padding: { left: '0.5rem', top: '1rem', right: '0.5rem', bottom: '1rem' }, background: { color: backgroundColor || '#fff' } },
+                        this.$render("i-button", { caption: "Reset Quiz", background: { color: buttonColor || '#fff' }, font: { color: systemFontColor || '#000' }, rightIcon: { name: 'redo', fill: systemFontColor || '#000' }, class: index_css_1.buttonStyle, onClick: () => this.onResetQuiz() }),
+                        this.$render("i-button", { caption: "Check Answers", class: index_css_1.buttonStyle, onClick: () => this.onCheckAnswer(), font: { color: systemFontColor || '#000' }, background: { color: buttonColor || '#fff' } })));
+                    this.pnlQuiz.append(btnStack);
                 }
-                this.pnlQuiz.append(quizWrapper);
             }
         }
         checkIfMultipleAnswer() {
@@ -909,7 +925,7 @@ define("@scom/scom-quiz", ["require", "exports", "@ijstech/components", "@scom/s
             }
         }
         render() {
-            return (this.$render("i-panel", { id: "pnlQuiz", minHeight: 25 },
+            return (this.$render("i-vstack", { id: "pnlQuiz", minHeight: 25 },
                 this.$render("i-label", { caption: "INIT" })));
         }
     };

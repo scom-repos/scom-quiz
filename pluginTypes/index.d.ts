@@ -17,6 +17,7 @@ declare module "@scom/scom-quiz/interface.ts" {
 }
 /// <amd-module name="@scom/scom-quiz/index.css.ts" />
 declare module "@scom/scom-quiz/index.css.ts" {
+    export const quizWrapperStyle: string;
     export const containerStyle: string;
     export const buttonStyle: string;
     export const resultPnlStyle: string;

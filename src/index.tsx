@@ -11,10 +11,11 @@ import {
   Button,
   Control,
   Label,
-  Icon
+  Icon,
+  VStack
 } from '@ijstech/components';
 import { IConfig, IAnswer } from './interface';
-import { containerStyle, buttonStyle, resultPnlStyle } from './index.css';
+import { containerStyle, buttonStyle, resultPnlStyle, quizWrapperStyle } from './index.css';
 import dataJson from './data.json'
 const Theme = Styles.Theme.ThemeVars;
 
@@ -212,7 +213,7 @@ declare global {
 @customModule
 @customElements('i-scom-quiz')
 export default class ScomQuiz extends Module {
-  private pnlQuiz: Panel;
+  private pnlQuiz: VStack;
   private currentQuestionIndex: number = 0;
   private selectedAnswerIdx: number[] = [];
   private btnPrev: Button;
@@ -486,14 +487,21 @@ export default class ScomQuiz extends Module {
     // }
 
     this.pnlQuiz.clearInnerHTML();
-    const quizWrapper = (<i-vstack></i-vstack>);
+    const quizWrapper = (<i-vstack class={quizWrapperStyle} background={{ color: backgroundColor || '#fff' }}></i-vstack>);
+    if (height) this.pnlQuiz.height = height;
 
     if (this.pnlQuiz) {
       if (!this.isQuizEnd) {
+        // const rowHeight = ['1.5fr', '1.5fr']
+        // for (let i = 0; i < currentQuestionData.answers.length; i++) {
+        //   rowHeight.splice(1, 0, '1fr');
+        // }
+        // quizWrapper.templateRows = rowHeight;
+
         const isMultipleChoice = this.checkIfMultipleAnswer();
         // question
         const hintNumber = <i-label caption={'*Select more than 1 answer'} font={{ size: '12px', color: questionFontColor || '#808080' }} visible={false}></i-label>;
-        const question = (<i-hstack width="100%" class={containerStyle} background={{ color: backgroundColor || '#fff' }}
+        const question = (<i-hstack width="100%" class={containerStyle} position='relative' background={{ color: backgroundColor || '#fff' }}
           border={{ width: 1, style: 'solid', color: borderColor || "#FFFFFF" }}>
           <i-label caption={`${this.currentQuestionIndex + 1}`} margin={{ right: '1rem' }} font={{ bold: true, size: '20px', color: questionFontColor || '#000000' }}></i-label>
           <i-vstack verticalAlignment='start' gap={'0.5rem'}>
@@ -574,6 +582,9 @@ export default class ScomQuiz extends Module {
           quizWrapper.append(answer);
         }
 
+        this.pnlQuiz.append(quizWrapper);
+        if (height != 'auto') quizWrapper.height = height - 100
+
         // buttons
         const gridBtnStack = (
           <i-grid-layout width="100%" height="100px" horizontalAlignment="center" verticalAlignment="center"
@@ -609,8 +620,7 @@ export default class ScomQuiz extends Module {
               font={{ color: systemFontColor || '#000' }} ></i-label>
 
           </i-grid-layout>);
-
-        quizWrapper.append(gridBtnStack);
+        this.pnlQuiz.append(gridBtnStack);
 
         if (this.currentQuestionIndex == 0) this.btnPrev.classList.add('disabled-btn');
         if (this.currentQuestionIndex == this._data.questions.length - 1) this.btnNext.classList.add('disabled-btn');
@@ -642,8 +652,7 @@ export default class ScomQuiz extends Module {
         const numberOfIncorrect = this._data.questions.length - numberOfCorrect - numberOfUnanswered;
 
         const pnlResult = (<i-vstack horizontalAlignment='center' position='relative'
-          padding={{ left: '2rem', top: '2rem', right: '2rem' }}
-          border={{ color: 'var(--divider)', radius: '0.25rem', width: 1, style: 'solid' }}>
+          padding={{ left: '2rem', top: '2rem', right: '2rem' }} class={containerStyle}>
           <i-panel border={{ color: 'var(--divider)', width: 0.5, style: 'solid' }} height={0} width={'80%'}
             position="absolute" zIndex={5} top={'calc(20px + 2rem)'}></i-panel>
           <i-hstack width={140} height={40}
@@ -670,16 +679,21 @@ export default class ScomQuiz extends Module {
             <i-label caption="Unanswered" font={{ color: 'var(--divider)', bold: true }}></i-label>
             <i-label caption={`${numberOfUnanswered}`} font={{ color: 'var(--divider)', bold: true }}></i-label>
           </i-hstack>
-          <i-hstack width={'100%'} horizontalAlignment='center' gap={'1rem'} padding={{ left: '0.5rem', top: '1rem', right: '0.5rem', bottom: '1rem' }}>
-            <i-button caption="Reset Quiz" background={{ color: buttonColor || '#fff' }} font={{ color: systemFontColor || '#000' }}
-              rightIcon={{ name: 'redo', fill: systemFontColor || '#000' }} class={buttonStyle} onClick={() => this.onResetQuiz()}></i-button>
-            <i-button caption="Check Answers" class={buttonStyle} onClick={() => this.onCheckAnswer()}
-              font={{ color: systemFontColor || '#000' }} background={{ color: buttonColor || '#fff' }}></i-button>
-          </i-hstack>
         </i-vstack>);
         quizWrapper.append(pnlResult);
+        if (height != 'auto') quizWrapper.height = height - 100
+        this.pnlQuiz.append(quizWrapper);
+
+        const btnStack = (<i-hstack class={containerStyle} height="100px" width={'100%'} horizontalAlignment='center' gap={'1rem'}
+          padding={{ left: '0.5rem', top: '1rem', right: '0.5rem', bottom: '1rem' }}
+          background={{ color: backgroundColor || '#fff' }} >
+          <i-button caption="Reset Quiz" background={{ color: buttonColor || '#fff' }} font={{ color: systemFontColor || '#000' }}
+            rightIcon={{ name: 'redo', fill: systemFontColor || '#000' }} class={buttonStyle} onClick={() => this.onResetQuiz()}></i-button>
+          <i-button caption="Check Answers" class={buttonStyle} onClick={() => this.onCheckAnswer()}
+            font={{ color: systemFontColor || '#000' }} background={{ color: buttonColor || '#fff' }}></i-button>
+        </i-hstack>)
+        this.pnlQuiz.append(btnStack);
       }
-      this.pnlQuiz.append(quizWrapper);
     }
   }
 
@@ -800,9 +814,9 @@ export default class ScomQuiz extends Module {
 
   render() {
     return (
-      <i-panel id="pnlQuiz" minHeight={25}>
+      <i-vstack id="pnlQuiz" minHeight={25}>
         <i-label caption="INIT"></i-label>
-      </i-panel>
+      </i-vstack>
     )
   }
 }

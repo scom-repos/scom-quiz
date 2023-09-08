@@ -1,8 +1,12 @@
 import { Styles } from "@ijstech/components";
 const Theme = Styles.Theme.ThemeVars;
 
+export const quizWrapperStyle = Styles.style({
+  overflow: 'auto'
+})
+
 export const containerStyle = Styles.style({
-  overflow: 'hidden',
+  // overflow: 'hidden',
   margin: '0 auto',
   padding: '1rem 1rem',
   $nest: {
